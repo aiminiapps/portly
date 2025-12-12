@@ -2,8 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { FiZap, FiShield, FiTrendingUp, FiCheckCircle } from 'react-icons/fi';
-import { SiMetamask, SiEthereum } from 'react-icons/si';
-
+import { SiEthereum } from 'react-icons/si';
+import { LuWalletMinimal } from "react-icons/lu";
 export default function WalletConnect({ onConnect, isConnecting }) {
   return (
     <motion.div
@@ -57,7 +57,7 @@ export default function WalletConnect({ onConnect, isConnecting }) {
                 </>
               ) : (
                 <>
-                  <SiMetamask className="w-7 h-7" />
+                  <LuWalletMinimal className="w-7 h-7" />
                   <span>Connect MetaMask Wallet</span>
                 </>
               )}
