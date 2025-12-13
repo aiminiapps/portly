@@ -24,9 +24,9 @@ export async function POST(request) {
     }
     
     const response = await openai.chat.completions.create({
-      model: 'deepseek/deepseek-chat-v3.1',
+      model: 'meta-llama/llama-4-maverick',
       messages,
-      max_tokens: 1000
+      max_tokens: 500
     });
     
     return NextResponse.json({ 
