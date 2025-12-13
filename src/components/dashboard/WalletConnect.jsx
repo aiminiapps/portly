@@ -1,115 +1,111 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { FiZap, FiShield, FiTrendingUp, FiCheckCircle } from 'react-icons/fi';
-import { SiEthereum } from 'react-icons/si';
-import { LuWalletMinimal } from "react-icons/lu";
-export default function WalletConnect({ onConnect, isConnecting }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5 }}
-      className="w-full max-w-2xl"
-    >
-      {/* Main Card */}
-      <div className="glass-card p-8 md:p-12 space-y-8 relative overflow-hidden">
-        {/* Animated Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#7C3AED]/10 via-transparent to-[#8B5CF6]/10 animate-pulse"></div>
-        
-        <div className="relative z-10">
-          {/* Logo & Title */}
-          <div className="text-center space-y-4 mb-8">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-              className="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-[#7C3AED] via-[#8B5CF6] to-[#A78BFA] flex items-center justify-center shadow-2xl shadow-[#8B5CF6]/40"
-            >
-              <FiZap className="w-12 h-12 text-white" />
-            </motion.div>
-            
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#F9FAFB] via-[#A78BFA] to-[#8B5CF6] bg-clip-text text-transparent">
-                Welcome to PORTLY.AI
-              </h2>
-              <p className="text-[#9CA3AF] mt-2 text-lg">
-                Next-Generation AI Portfolio Management
-              </p>
-            </div>
-          </div>
+import { useState, useEffect } from 'react';
+import { FiArrowRight, FiCommand, FiShield, FiZap } from 'react-icons/fi';
+import { SiEthereum, SiBinance, SiPolygon } from 'react-icons/si';
 
-          {/* Connect Button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={onConnect}
-            disabled={isConnecting}
-            className="w-full btn-primary py-6 flex items-center justify-center gap-4 text-lg relative overflow-hidden group"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-[#7C3AED] via-[#8B5CF6] to-[#A78BFA] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+export default function WalletConnect({ onConnect, isConnecting }) {
+  const [lastSession, setLastSession] = useState(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('portly_wallet_address');
+    if (saved) setLastSession(saved);
+  }, []);
+
+  return (
+    <div className="w-full max-w-md mx-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }} // "Luxury" ease curve
+        className="relative"
+      >
+        {/* Main Card Container */}
+        <div className="bg-[#121214]/80 backdrop-blur-2xl border border-white/5 rounded-3xl p-8 md:p-10 overflow-hidden">
+          
+          {/* Subtle Gradient Background Blob (Static, no pulsing) */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col items-center text-center">
             
-            <div className="relative z-10 flex items-center gap-4">
+            {/* Logo Mark */}
+            <div className="mb-8 p-4 rounded-2xl bg-white/5 border border-white/5">
+              <FiCommand className="w-8 h-8 text-white" />
+            </div>
+
+            {/* Typography */}
+            <h1 className="text-3xl font-medium text-white mb-3 tracking-tight">
+              PORTLY<span className="text-white/40">.AI</span>
+            </h1>
+            <p className="text-white/40 text-sm leading-relaxed max-w-[260px] mb-10">
+              Your intelligent portfolio manager. Multi-chain analysis powered by Alchemy & Moralis.
+            </p>
+
+            {/* Primary Action */}
+            <motion.button
+              onClick={onConnect}
+              disabled={isConnecting}
+              whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.1)' }}
+              whileTap={{ scale: 0.98 }}
+              className="group w-full relative overflow-hidden rounded-xl bg-white text-black font-medium py-4 px-6 flex items-center justify-center gap-3 transition-colors"
+            >
               {isConnecting ? (
-                <>
-                  <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Connecting...</span>
-                </>
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                  <span className="text-sm">Authenticating...</span>
+                </div>
               ) : (
                 <>
-                  <LuWalletMinimal className="w-7 h-7" />
-                  <span>Connect MetaMask Wallet</span>
+                  <span className="text-sm">
+                    {lastSession ? 'Resume Dashboard' : 'Connect Wallet'}
+                  </span>
+                  <FiArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </>
               )}
-            </div>
-          </motion.button>
+            </motion.button>
 
-          {/* Features Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-            {[
-              {
-                icon: FiTrendingUp,
-                title: 'AI Analytics',
-                description: 'Real-time portfolio insights',
-                color: '#8B5CF6'
-              },
-              {
-                icon: FiShield,
-                title: 'Secure',
-                description: 'Your keys, your crypto',
-                color: '#4ADE80'
-              },
-              {
-                icon: FiCheckCircle,
-                title: 'Free to Use',
-                description: 'No hidden fees',
-                color: '#3B82F6'
-              }
-            ].map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
-                className="p-4 rounded-xl bg-[#1E1F26]/50 border border-[#242437] hover:border-[#8B5CF6]/50 transition-all"
+            {/* Resume Session Indicator */}
+            {lastSession && !isConnecting && (
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }}
+                className="mt-4 flex items-center gap-2 text-[10px] text-white/30 uppercase tracking-wider"
               >
-                <feature.icon className="w-8 h-8 mb-3" style={{ color: feature.color }} />
-                <h3 className="text-sm font-semibold text-[#F9FAFB] mb-1">
-                  {feature.title}
-                </h3>
-                <p className="text-xs text-[#9CA3AF]">{feature.description}</p>
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span>Detected {lastSession.slice(0, 6)}...{lastSession.slice(-4)}</span>
               </motion.div>
+            )}
+          </div>
+
+          {/* Footer / Chains */}
+          <div className="mt-12 pt-8 border-t border-white/5 grid grid-cols-3 gap-4">
+            {[
+              { label: 'Ethereum', icon: SiEthereum },
+              { label: 'Polygon', icon: SiPolygon },
+              { label: 'Binance', icon: SiBinance },
+            ].map((chain, i) => (
+              <div key={i} className="flex flex-col items-center gap-2 opacity-30 hover:opacity-100 transition-opacity duration-300">
+                <chain.icon className="w-5 h-5" />
+                <span className="text-[10px] font-medium tracking-wide">{chain.label}</span>
+              </div>
             ))}
           </div>
+        </div>
 
-          {/* Powered By */}
-          <div className="flex items-center justify-center gap-2 mt-8 text-sm text-[#9CA3AF]">
-            <span>Powered by</span>
-            <SiEthereum className="w-4 h-4" />
-            <span className="font-semibold text-[#E5E7EB]">Ethereum</span>
+        {/* Security Badge (Outside Card) */}
+        <div className="mt-6 flex justify-center gap-6">
+          <div className="flex items-center gap-2 text-[#9CA3AF] text-xs">
+            <FiShield className="w-3.5 h-3.5" />
+            <span>Non-Custodial</span>
+          </div>
+          <div className="flex items-center gap-2 text-[#9CA3AF] text-xs">
+            <FiZap className="w-3.5 h-3.5" />
+            <span>AI Optimized</span>
           </div>
         </div>
-      </div>
-    </motion.div>
+
+      </motion.div>
+    </div>
   );
 }

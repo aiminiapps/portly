@@ -30,6 +30,21 @@ body {
   overflow-x: hidden;
 }
 
+.glass-card {
+  background: rgba(18, 18, 20, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Smooth Input/Button resets */
+button, input {
+  outline: none;
+}
+
+button:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
 /* Premium Glass Card */
 .glass-card {
   background: var(--glass-surface);
