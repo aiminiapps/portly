@@ -30,6 +30,7 @@ body {
   overflow-x: hidden;
 }
 
+
 .glass-card {
   background: rgba(18, 18, 20, 0.6);
   backdrop-filter: blur(24px);
@@ -119,9 +120,5 @@ button:focus-visible {
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  display: none;  
 }
-::-webkit-scrollbar-track { background: #0A0A0F; }
-::-webkit-scrollbar-thumb { background: #242437; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #8B5CF6; }
