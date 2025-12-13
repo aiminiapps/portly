@@ -1,331 +1,282 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactECharts from 'echarts-for-react';
-import { FiTrendingUp, FiTrendingDown, FiZap, FiInfo } from 'react-icons/fi';
+import { FiTrendingUp, FiTrendingDown, FiZap, FiCalendar, FiActivity } from 'react-icons/fi';
 
 export default function PerformanceChart({ historicalData }) {
   const [selectedRange, setSelectedRange] = useState('7D');
   const [showAIInsights, setShowAIInsights] = useState(false);
+  const [localData, setLocalData] = useState([]);
+  const [hoveredPrice, setHoveredPrice] = useState(null);
+  const [hoveredDate, setHoveredDate] = useState(null);
 
-  const timeRanges = ['24H', '7D', '30D', '90D', '1Y', 'ALL'];
+  // 1. Get Data from Props OR Local Hold (LocalStorage)
+  useEffect(() => {
+    if (historicalData && historicalData.length > 0) {
+      setLocalData(historicalData);
+    } else {
+      const stored = localStorage.getItem('portly_historical_data');
+      if (stored) {
+        try {
+          setLocalData(JSON.parse(stored));
+        } catch (e) {
+          console.error("Failed to parse local history", e);
+        }
+      }
+    }
+  }, [historicalData]);
 
-  const getFilteredData = () => {
-    if (!historicalData || historicalData.length === 0) return [];
+  // 2. Filter Logic
+  const filteredData = useMemo(() => {
+    if (!localData.length) return [];
     
     const now = new Date();
-    let cutoffDate = new Date();
+    const cutoff = new Date();
     
     switch (selectedRange) {
-      case '24H':
-        cutoffDate.setHours(now.getHours() - 24);
-        break;
-      case '7D':
-        cutoffDate.setDate(now.getDate() - 7);
-        break;
-      case '30D':
-        cutoffDate.setDate(now.getDate() - 30);
-        break;
-      case '90D':
-        cutoffDate.setDate(now.getDate() - 90);
-        break;
-      case '1Y':
-        cutoffDate.setFullYear(now.getFullYear() - 1);
-        break;
-      case 'ALL':
-        return historicalData;
-      default:
-        cutoffDate.setDate(now.getDate() - 7);
+      case '24H': cutoff.setHours(now.getHours() - 24); break;
+      case '7D': cutoff.setDate(now.getDate() - 7); break;
+      case '30D': cutoff.setDate(now.getDate() - 30); break;
+      case '90D': cutoff.setDate(now.getDate() - 90); break;
+      case '1Y': cutoff.setFullYear(now.getFullYear() - 1); break;
+      default: cutoff.setDate(now.getDate() - 7);
     }
     
-    return historicalData.filter(d => new Date(d.date) >= cutoffDate);
-  };
+    return localData.filter(d => new Date(d.date) >= cutoff);
+  }, [localData, selectedRange]);
 
-  const data = getFilteredData();
+  // 3. Stats Calculation
+  const currentPrice = filteredData.length > 0 ? filteredData[filteredData.length - 1].value : 0;
+  const startPrice = filteredData.length > 0 ? filteredData[0].value : 0;
+  const priceChange = currentPrice - startPrice;
+  const percentChange = startPrice > 0 ? (priceChange / startPrice) * 100 : 0;
+  const isPositive = priceChange >= 0;
 
-  if (!data || data.length === 0) {
-    return (
-      <div className="glass-card p-8 text-center">
-        <p className="text-[#9CA3AF]">No performance data available</p>
-      </div>
-    );
-  }
+  // Display Values (Interactive)
+  const displayPrice = hoveredPrice !== null ? hoveredPrice : currentPrice;
+  const displayDate = hoveredDate !== null ? hoveredDate : 'Current Value';
 
-  const dates = data.map(d => d.date);
-  const values = data.map(d => d.value);
-
-  const firstValue = values[0] || 0;
-  const lastValue = values[values.length - 1] || 0;
-  const totalChange = lastValue - firstValue;
-  const totalChangePercent = ((totalChange / firstValue) * 100).toFixed(2);
-  const isPositive = totalChange >= 0;
-
-  const option = {
+  // 4. Chart Configuration (Premium Style)
+  const getOption = useCallback(() => ({
     backgroundColor: 'transparent',
-    grid: {
-      left: '3%',
-      right: '3%',
-      top: '15%',
-      bottom: '15%',
-      containLabel: true
-    },
+    grid: { left: 0, right: 0, top: 20, bottom: 0, containLabel: false },
     tooltip: {
       trigger: 'axis',
-      backgroundColor: 'rgba(30, 31, 38, 0.98)',
-      borderColor: '#8B5CF6',
-      borderWidth: 2,
-      textStyle: {
-        color: '#E5E7EB',
-        fontSize: 13
-      },
+      showContent: false, // We handle display manually for a cleaner look
       axisPointer: {
-        type: 'cross',
+        type: 'line',
         lineStyle: {
           color: '#8B5CF6',
+          width: 1,
           type: 'dashed'
         }
-      },
-      formatter: (params) => {
-        const param = params[0];
-        const date = new Date(param.axisValue);
-        return `
-          <div style="padding: 8px;">
-            <div style="color: #9CA3AF; font-size: 11px; margin-bottom: 6px;">
-              ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-            </div>
-            <div style="font-size: 16px; font-weight: bold; color: #F9FAFB;">
-              $${param.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-            </div>
-          </div>
-        `;
       }
     },
     xAxis: {
       type: 'category',
-      data: dates,
-      boundaryGap: false,
-      axisLine: {
-        lineStyle: {
-          color: '#242437',
-          width: 2
-        }
-      },
-      axisLabel: {
-        color: '#9CA3AF',
-        fontSize: 12,
-        fontWeight: 500,
-        formatter: (value) => {
-          const date = new Date(value);
-          return `${date.getMonth() + 1}/${date.getDate()}`;
-        }
-      },
-      axisTick: {
-        show: false
-      },
-      splitLine: {
-        show: true,
-        lineStyle: {
-          color: '#242437',
-          type: 'dashed',
-          opacity: 0.3
-        }
-      }
+      data: filteredData.map(d => d.date),
+      show: false,
+      boundaryGap: false
     },
     yAxis: {
       type: 'value',
-      axisLine: {
-        show: false
-      },
-      axisLabel: {
-        color: '#9CA3AF',
-        fontSize: 12,
-        fontWeight: 500,
-        formatter: (value) => `$${(value / 1000).toFixed(0)}k`
-      },
-      splitLine: {
-        lineStyle: {
-          color: '#242437',
-          type: 'dashed',
-          width: 2
-        }
-      }
+      show: false,
+      min: 'dataMin', // Focus the chart on the movement
+      max: 'dataMax'
     },
-    series: [
-      {
-        data: values,
-        type: 'line',
-        smooth: true,
-        showSymbol: false,
-        lineStyle: {
-          width: 4,
-          color: {
-            type: 'linear',
-            x: 0, y: 0, x2: 1, y2: 0,
-            colorStops: [
-              { offset: 0, color: isPositive ? '#4ADE80' : '#F87171' },
-              { offset: 0.5, color: isPositive ? '#16A34A' : '#DC2626' },
-              { offset: 1, color: isPositive ? '#4ADE80' : '#F87171' }
-            ]
-          },
-          shadowColor: isPositive ? 'rgba(74, 222, 128, 0.5)' : 'rgba(248, 113, 113, 0.5)',
-          shadowBlur: 20,
-          shadowOffsetY: 10
-        },
-        areaStyle: {
-          color: {
-            type: 'linear',
-            x: 0, y: 0, x2: 0, y2: 1,
-            colorStops: [
-              { offset: 0, color: isPositive ? 'rgba(74, 222, 128, 0.5)' : 'rgba(248, 113, 113, 0.5)' },
-              { offset: 0.7, color: isPositive ? 'rgba(74, 222, 128, 0.1)' : 'rgba(248, 113, 113, 0.1)' },
-              { offset: 1, color: 'rgba(0, 0, 0, 0)' }
-            ]
-          }
-        },
-        emphasis: {
-          focus: 'series',
-          itemStyle: {
-            color: isPositive ? '#4ADE80' : '#F87171',
-            borderColor: '#0F0F14',
-            borderWidth: 3,
-            shadowBlur: 20,
-            shadowColor: isPositive ? 'rgba(74, 222, 128, 0.8)' : 'rgba(248, 113, 113, 0.8)'
-          }
+    series: [{
+      data: filteredData.map(d => d.value),
+      type: 'line',
+      smooth: 0.3,
+      showSymbol: false,
+      symbolSize: 8,
+      showAllSymbol: true,
+      itemStyle: {
+        color: '#8B5CF6',
+        borderColor: '#fff',
+        borderWidth: 2
+      },
+      lineStyle: {
+        width: 3,
+        color: '#8B5CF6',
+        shadowColor: 'rgba(139, 92, 246, 0.5)',
+        shadowBlur: 15
+      },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0, y: 0, x2: 0, y2: 1,
+          colorStops: [
+            { offset: 0, color: 'rgba(139, 92, 246, 0.4)' },
+            { offset: 1, color: 'rgba(139, 92, 246, 0)' }
+          ]
         }
       }
-    ]
+    }]
+  }), [filteredData]);
+
+  // Chart Event Handlers
+  const onChartHover = (params) => {
+    if (params.componentType === 'series' || params.length > 0) {
+      const dataPoint = params[0] || params; // Handle different echarts event structures
+      if (dataPoint) {
+        setHoveredPrice(dataPoint.value);
+        const dateObj = new Date(dataPoint.axisValue);
+        setHoveredDate(dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit' }));
+      }
+    }
   };
 
-  const getAIInsights = () => {
-    const trend = isPositive ? 'upward' : 'downward';
-    const strength = Math.abs(totalChangePercent) > 5 ? 'strong' : Math.abs(totalChangePercent) > 2 ? 'moderate' : 'mild';
-    
-    return {
-      trend: `**${strength.toUpperCase()} ${trend.toUpperCase()} TREND**`,
-      analysis: [
-        `Your portfolio has ${isPositive ? 'gained' : 'lost'} **${Math.abs(totalChangePercent)}%** in the selected ${selectedRange} period`,
-        `${isPositive ? '✅' : '⚠️'} ${isPositive ? 'Strong performance - Consider taking partial profits' : 'Monitor closely - Good accumulation opportunity'}`,
-        `Average daily movement: **${(Math.abs(totalChange) / data.length).toFixed(2)} USD**`
-      ],
-      recommendation: isPositive 
-        ? '💡 **Recommendation**: Set stop-loss at 5% below current value to protect gains'
-        : '💡 **Recommendation**: DCA (Dollar Cost Average) to lower entry point'
-    };
+  const onChartLeave = () => {
+    setHoveredPrice(null);
+    setHoveredDate(null);
   };
 
-  const insights = getAIInsights();
+  if (!localData.length) {
+    return (
+      <div className="rounded-3xl border border-white/5 bg-[#121214]/60 p-8 text-center backdrop-blur-xl">
+        <div className="w-12 h-12 mx-auto bg-white/5 rounded-full flex items-center justify-center mb-3">
+          <FiActivity className="text-white/20" />
+        </div>
+        <p className="text-white/40 text-sm">No historical data found</p>
+      </div>
+    );
+  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="glass-card p-6 md:p-8 space-y-6 relative overflow-hidden"
-    >
-      {/* Animated Background Effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#8B5CF6]/5 via-transparent to-[#7C3AED]/5 opacity-50"></div>
+    <div className="relative rounded-3xl border border-white/5 bg-[#121214]/60 backdrop-blur-xl p-6 md:p-8 overflow-hidden group">
+      {/* Background Gradient Blob */}
+      <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#8B5CF6]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#8B5CF6]/20 transition-colors duration-700"></div>
 
-      {/* Header */}
-      <div className="relative z-10">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#8B5CF6] flex items-center justify-center pulse-glow">
-              <FiTrendingUp className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-[#F9FAFB]">Portfolio Performance</h3>
-              <div className="flex items-center gap-3 mt-1">
-                {isPositive ? (
-                  <FiTrendingUp className="w-5 h-5 text-[#4ADE80]" />
-                ) : (
-                  <FiTrendingDown className="w-5 h-5 text-[#F87171]" />
-                )}
-                <span className={`text-3xl font-bold ${isPositive ? 'text-[#4ADE80]' : 'text-[#F87171]'}`}>
-                  {isPositive ? '+' : ''}{totalChangePercent}%
-                </span>
-                <span className="text-sm text-[#9CA3AF]">
-                  ${Math.abs(totalChange).toFixed(2)}
-                </span>
-              </div>
-            </div>
+      {/* HEADER SECTION */}
+      <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
+        
+        {/* Price & Change Display */}
+        <div className="space-y-1">
+          <motion.p 
+            key={displayDate}
+            initial={{ opacity: 0.5 }} animate={{ opacity: 1 }}
+            className="text-xs font-medium text-white/40 uppercase tracking-wider flex items-center gap-2"
+          >
+            <FiCalendar className="w-3 h-3" />
+            {displayDate}
+          </motion.p>
+          
+          <div className="flex items-baseline gap-4">
+            <h2 className="text-4xl md:text-5xl font-medium text-white tracking-tight">
+              ${displayPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </h2>
           </div>
 
-          {/* Time Range Selector */}
-          <div className="flex items-center gap-2 bg-[#1E1F26] rounded-xl p-1.5 border border-[#242437]">
-            {timeRanges.map((range) => (
-              <button
-                key={range}
-                onClick={() => setSelectedRange(range)}
-                className={`px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
-                  selectedRange === range
-                    ? 'bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] text-white shadow-lg shadow-[#8B5CF6]/30'
-                    : 'text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#16171D]'
-                }`}
-              >
-                {range}
-              </button>
-            ))}
+          <div className={`flex items-center gap-2 mt-2 ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+            <div className={`px-2 py-0.5 rounded text-xs font-bold bg-white/5 border border-white/5 flex items-center gap-1`}>
+              {isPositive ? <FiTrendingUp /> : <FiTrendingDown />}
+              <span>{Math.abs(percentChange).toFixed(2)}%</span>
+            </div>
+            <span className="text-sm text-white/40">
+              {isPositive ? '+' : ''}${Math.abs(priceChange).toFixed(2)} ({selectedRange})
+            </span>
           </div>
         </div>
 
-        {/* AI Insights Button */}
-        <button
-          onClick={() => setShowAIInsights(!showAIInsights)}
-          className="ai-insight-btn flex items-center gap-2 mb-4"
-        >
-          <FiZap className="w-4 h-4" />
-          <span>AI Insights</span>
-          <motion.div
-            animate={{ rotate: showAIInsights ? 180 : 0 }}
-            transition={{ duration: 0.3 }}
+        {/* Controls: Range & AI */}
+        <div className="flex flex-col items-end gap-3">
+          {/* Range Selector Pills */}
+          <div className="flex p-1 rounded-xl bg-white/5 border border-white/5">
+            {['24H', '7D', '30D', '1Y'].map((range) => (
+              <button
+                key={range}
+                onClick={() => setSelectedRange(range)}
+                className={`relative px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                  selectedRange === range ? 'text-white' : 'text-white/40 hover:text-white/70'
+                }`}
+              >
+                {selectedRange === range && (
+                  <motion.div
+                    layoutId="activeRange"
+                    className="absolute inset-0 bg-[#8B5CF6] rounded-lg shadow-lg shadow-[#8B5CF6]/20"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <span className="relative z-10">{range}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* AI Toggle Button */}
+          <button
+            onClick={() => setShowAIInsights(!showAIInsights)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${
+              showAIInsights 
+                ? 'bg-[#8B5CF6]/20 border-[#8B5CF6] text-white shadow-[0_0_15px_rgba(139,92,246,0.3)]' 
+                : 'bg-white/5 border-white/5 text-white/60 hover:bg-white/10'
+            }`}
           >
-            <FiInfo className="w-4 h-4" />
-          </motion.div>
-        </button>
+            <FiZap className={`w-4 h-4 ${showAIInsights ? 'fill-current' : ''}`} />
+            <span className="text-xs font-medium">AI Analysis</span>
+          </button>
+        </div>
+      </div>
 
-        {/* AI Insights Panel */}
-        <AnimatePresence>
-          {showAIInsights && (
-            <motion.div
-              initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-              animate={{ opacity: 1, height: 'auto', marginBottom: 24 }}
-              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="p-6 rounded-xl bg-gradient-to-br from-[#8B5CF6]/20 to-[#7C3AED]/10 border border-[#8B5CF6]/30 backdrop-blur-xl">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <FiZap className="w-5 h-5 text-[#8B5CF6]" />
-                    <h4 className="text-lg font-bold text-[#F9FAFB]">{insights.trend}</h4>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    {insights.analysis.map((point, index) => (
-                      <p key={index} className="text-sm text-[#E5E7EB] leading-relaxed">
-                        {point}
-                      </p>
-                    ))}
-                  </div>
+      {/* CHART SECTION */}
+      <div className="relative h-[300px] w-full -ml-2">
+        <ReactECharts
+          option={getOption()}
+          style={{ height: '100%', width: '100%' }}
+          onEvents={{
+            updateAxisPointer: (evt) => {
+               // ECharts axis pointer update event
+               if(evt.dataIndex !== undefined) {
+                  const val = filteredData[evt.dataIndex];
+                  if(val) {
+                    setHoveredPrice(val.value);
+                    setHoveredDate(new Date(val.date).toLocaleDateString());
+                  }
+               }
+            },
+            mouseout: onChartLeave
+          }}
+          opts={{ renderer: 'svg' }}
+        />
+      </div>
 
-                  <div className="pt-4 border-t border-[#8B5CF6]/20">
-                    <p className="text-sm font-semibold text-[#8B5CF6]">{insights.recommendation}</p>
+      {/* AI INSIGHTS DRAWER */}
+      <AnimatePresence>
+        {showAIInsights && (
+          <motion.div
+            initial={{ height: 0, opacity: 0, marginTop: 0 }}
+            animate={{ height: 'auto', opacity: 1, marginTop: 16 }}
+            exit={{ height: 0, opacity: 0, marginTop: 0 }}
+            className="overflow-hidden border-t border-white/10"
+          >
+            <div className="pt-4 flex gap-4">
+              <div className="w-1 h-auto bg-gradient-to-b from-[#8B5CF6] to-transparent rounded-full opacity-50"></div>
+              <div className="flex-1 space-y-2">
+                <h4 className="text-sm font-medium text-[#8B5CF6]">Portfolio Intelligence</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="p-3 rounded-xl bg-white/5 border border-white/5">
+                    <p className="text-xs text-white/40 mb-1">Trend Analysis</p>
+                    <p className="text-sm text-white/80">
+                      Strong {isPositive ? 'accumulation' : 'correction'} phase detected. 
+                      Volatility is {Math.abs(percentChange) > 5 ? 'high' : 'stable'} compared to market avg.
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/5 border border-white/5">
+                    <p className="text-xs text-white/40 mb-1">Recommendation</p>
+                    <p className="text-sm text-white/80">
+                      {isPositive 
+                        ? 'Consider trailing stop-loss at 5% to secure recent gains.' 
+                        : 'Current support levels suggest a potential DCA opportunity.'}
+                    </p>
                   </div>
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Chart */}
-      <div className="relative z-10">
-        <ReactECharts
-          option={option}
-          style={{ height: '450px', width: '100%' }}
-          opts={{ renderer: 'svg' }}
-          className="rounded-lg"
-        />
-      </div>
-    </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
