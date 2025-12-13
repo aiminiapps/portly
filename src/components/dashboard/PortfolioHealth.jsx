@@ -14,9 +14,6 @@ export default function PortfolioHealth({ healthMetrics, assets }) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
 
-  // ---------------------------------------------------------
-  // 1. ROBUST SCORE CALCULATION ENGINE
-  // ---------------------------------------------------------
   useEffect(() => {
     // Helper: Calculate scores from raw assets array
     const calculateFromAssets = (assetList) => {
@@ -180,8 +177,7 @@ export default function PortfolioHealth({ healthMetrics, assets }) {
       <div className="flex items-start justify-between mb-8 z-10">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <FiTarget className="w-4 h-4 text-[#8B5CF6]" />
-            <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">Health Score</h3>
+            <h3 className="text-xs text-white/60 ">Health Score</h3>
           </div>
           <h2 className="text-lg font-medium text-white">Portfolio Status</h2>
         </div>
