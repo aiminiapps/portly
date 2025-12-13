@@ -4,18 +4,15 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useSWR from 'swr';
 import { 
-  FiTrendingUp, FiShield, FiActivity, FiLayers, 
-  FiPieChart, FiBarChart2, FiZap, FiCpu,
-  FiLogOut, FiMenu, FiX
+  FiPieChart, FiBarChart2, FiShield, FiActivity, 
+  FiZap, FiCpu, FiLogOut, FiMenu, FiX, FiCheckSquare 
 } from 'react-icons/fi';
+// Assuming you have these helpers or standard wallet connect logic
 import { 
-  connectWallet, 
-  disconnectWallet, 
-  watchAccount, 
-  getBalance,
-  getAccounts 
+  connectWallet, disconnectWallet, watchAccount, getBalance, getAccounts 
 } from '@/lib/metamask';
 
+// Components
 import PortfolioOverview from '@/components/dashboard/PortfolioOverview';
 import AssetCards from '@/components/dashboard/AssetCards';
 import PerformanceChart from '@/components/dashboard/PerformanceChart';
@@ -26,6 +23,7 @@ import RadarAnalysis from '@/components/dashboard/RadarAnalysis';
 import ActivityHeatmap from '@/components/dashboard/ActivityHeatmap';
 import AssetAllocationNested from '@/components/dashboard/AssetAllocationNested';
 import AIAgentModal from '@/components/dashboard/AIAgentModal';
+import TaskCenter from '@/components/dashboard/TaskCenter';
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -34,50 +32,37 @@ export default function AIDashboard() {
   const [walletBalance, setWalletBalance] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [connectionError, setConnectionError] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedView, setSelectedView] = useState('overview');
-  const [isClient, setIsClient] = useState(false);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
+  // Initial Client Load
   useEffect(() => {
     setIsClient(true);
-  }, []);
-
-  const { data: portfolioData, error, isLoading, mutate } = useSWR(
-    walletAddress ? `/api/data?wallet=${walletAddress}` : null,
-    fetcher,
-    {
-      refreshInterval: 30000,
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-    }
-  );
-
-  useEffect(() => {
-    if (!isClient) return;
-
-    const checkExistingConnection = async () => {
-      try {
-        const accounts = await getAccounts();
-        if (accounts.length > 0) {
-          setWalletAddress(accounts[0]);
-          setIsConnected(true);
-          const balance = await getBalance(accounts[0]);
-          setWalletBalance(balance);
-        }
-      } catch (error) {
-        console.error('Error checking existing connection:', error);
+    // Check local storage or existing provider for session
+    const checkConnection = async () => {
+      const accounts = await getAccounts();
+      if (accounts && accounts.length > 0) {
+        setWalletAddress(accounts[0]);
+        setIsConnected(true);
+        const bal = await getBalance(accounts[0]);
+        setWalletBalance(bal);
       }
     };
+    if (window.ethereum) checkConnection();
+  }, []);
 
-    const timeout = setTimeout(checkExistingConnection, 100);
-    return () => clearTimeout(timeout);
-  }, [isClient]);
+  // Real Data Fetching via API (Moralis/Alchemy wrapper)
+  const { data: portfolioData, mutate } = useSWR(
+    walletAddress ? `/api/data?wallet=${walletAddress}` : null,
+    fetcher,
+    { refreshInterval: 60000 }
+  );
 
+  // Wallet Event Listeners
   useEffect(() => {
-    if (!isConnected || !isClient) return;
-
+    if (!isClient) return;
     const unwatch = watchAccount(async (newAddress) => {
       if (newAddress) {
         setWalletAddress(newAddress);
@@ -88,26 +73,19 @@ export default function AIDashboard() {
         handleDisconnect();
       }
     });
-
-    return () => {
-      if (unwatch) unwatch();
-    };
-  }, [isConnected, isClient, mutate]);
+    return () => unwatch && unwatch();
+  }, [isClient, mutate]);
 
   const handleConnect = async () => {
     setIsConnecting(true);
-    setConnectionError(null);
-
     try {
       const { address } = await connectWallet();
       setWalletAddress(address);
       setIsConnected(true);
       const balance = await getBalance(address);
       setWalletBalance(balance);
-      mutate();
-    } catch (error) {
-      console.error('Connection error:', error);
-      setConnectionError(error.message || 'Failed to connect wallet');
+    } catch (e) {
+      console.error(e);
     } finally {
       setIsConnecting(false);
     }
@@ -117,195 +95,175 @@ export default function AIDashboard() {
     disconnectWallet();
     setWalletAddress(null);
     setIsConnected(false);
-    setWalletBalance(0);
-    setConnectionError(null);
   };
 
-  if (!isClient) {
-    return (
-      <div className="min-h-screen w-full bg-[#0A0A0F] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#8B5CF6] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-[#E5E7EB]">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // Prevent Hydration Mismatch
+  if (!isClient) return null;
 
+  // Not Connected State
   if (!isConnected) {
     return (
-      <div className="min-h-screen w-full bg-[#0A0A0F] flex items-center justify-center p-4">
-        <WalletConnect 
-          onConnect={handleConnect} 
-          isConnecting={isConnecting}
-          error={connectionError}
-        />
+      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0F] p-4">
+        <WalletConnect onConnect={handleConnect} isConnecting={isConnecting} />
       </div>
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen w-full bg-[#0A0A0F] flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="relative w-20 h-20 mx-auto">
-            <div className="absolute inset-0 border-4 border-[#8B5CF6]/20 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-transparent border-t-[#8B5CF6] rounded-full animate-spin"></div>
-          </div>
-          <div>
-            <p className="text-[#E5E7EB] text-lg font-semibold">Analyzing Portfolio</p>
-            <p className="text-[#9CA3AF] text-sm mt-1">Fetching blockchain data...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const menuItems = [
+  const navItems = [
     { id: 'overview', label: 'Overview', icon: FiPieChart },
-    { id: 'analytics', label: 'Analytics', icon: FiBarChart2 },
-    { id: 'risk', label: 'Risk Analysis', icon: FiShield },
+    { id: 'analytics', label: 'Deep Dive', icon: FiBarChart2 },
+    { id: 'tasks', label: 'Task Center', icon: FiCheckSquare },
     { id: 'activity', label: 'Activity', icon: FiActivity },
   ];
 
   return (
-    <div className="min-h-screen w-full bg-[#0A0A0F] text-[#E5E7EB]">
+    <div className="min-h-screen bg-[#0A0A0F] text-[#E5E7EB] font-sans selection:bg-[#8B5CF6] selection:text-white">
+      
       {/* AI Agent Modal */}
-      <AIAgentModal
-        isOpen={isAIModalOpen}
-        onClose={() => setIsAIModalOpen(false)}
+      <AIAgentModal 
+        isOpen={isAIModalOpen} 
+        onClose={() => setIsAIModalOpen(false)} 
         portfolioData={portfolioData}
         walletAddress={walletAddress}
       />
 
-      {/* Premium Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 backdrop-blur-2xl bg-[#0A0A0F]/90 border-b border-[#242437]/50">
-        <div className="w-full px-4 md:px-6 py-4">
-          <div className="flex items-center justify-between">
-            {/* Left Side */}
-            <div className="flex items-center gap-4 md:gap-6">
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="lg:hidden p-2.5 hover:bg-[#1E1F26] rounded-xl transition-colors"
-              >
-                {isSidebarOpen ? <FiX className="w-6 h-6" /> : <FiMenu className="w-6 h-6" />}
-              </button>
-              
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7C3AED] via-[#8B5CF6] to-[#A78BFA] flex items-center justify-center shadow-lg shadow-[#8B5CF6]/30 pulse-glow">
-                  <FiZap className="w-7 h-7 text-white" />
-                </div>
-                <div className="hidden sm:block">
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-[#F9FAFB] to-[#A78BFA] bg-clip-text text-transparent">
-                    PORTLY.AI
-                  </h1>
-                  <p className="text-xs text-[#9CA3AF]">AI-Powered Portfolio</p>
-                </div>
+      {/* Top Navigation */}
+      <header className="fixed top-0 inset-x-0 z-40 bg-[#0A0A0F]/80 backdrop-blur-md border-b border-[#242437]">
+        <div className="flex items-center justify-between px-4 py-3 md:px-6">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-2 hover:bg-[#1E1F26] rounded-lg lg:hidden transition-colors"
+            >
+              {isSidebarOpen ? <FiX /> : <FiMenu />}
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#8B5CF6] flex items-center justify-center shadow-[0_0_15px_rgba(139,92,246,0.5)]">
+                <FiZap className="text-white w-5 h-5" />
               </div>
+              <span className="font-bold text-lg tracking-tight">PORTLY<span className="text-[#8B5CF6]">.AI</span></span>
             </div>
+          </div>
 
-            {/* Right Side */}
-            <div className="flex items-center gap-2 md:gap-4">
-              {/* Wallet Info */}
-              <div className="hidden md:flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#1E1F26] to-[#16171D] border border-[#242437]">
-                <div className="flex flex-col items-end">
-                  <span className="text-xs text-[#9CA3AF]">Balance</span>
-                  <span className="text-sm font-bold text-[#F9FAFB]">
-                    {walletBalance.toFixed(4)} ETH
-                  </span>
-                </div>
-                <div className="w-px h-8 bg-[#242437]"></div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse"></div>
-                  <span className="text-sm font-medium text-[#E5E7EB]">
-                    {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-                  </span>
-                </div>
-              </div>
-
-              {/* AI Agent Button */}
-              <button
-                onClick={() => setIsAIModalOpen(true)}
-                className="btn-3d p-3 relative group"
-              >
-                <FiCpu className="w-5 h-5" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#4ADE80] rounded-full animate-pulse"></div>
-              </button>
-
-              {/* Disconnect */}
-              <button
-                onClick={handleDisconnect}
-                className="p-2.5 rounded-xl bg-[#1E1F26] border border-[#242437] hover:border-[#F87171] hover:text-[#F87171] transition-all"
-              >
-                <FiLogOut className="w-5 h-5" />
-              </button>
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-lg bg-[#1E1F26] border border-[#242437]">
+               <div className="flex flex-col text-right">
+                  <span className="text-[10px] text-[#9CA3AF] uppercase font-bold tracking-wider">Balance</span>
+                  <span className="text-sm font-bold text-white">{walletBalance.toFixed(4)} ETH</span>
+               </div>
             </div>
+            <button onClick={handleDisconnect} className="p-2 hover:bg-[#1E1F26] rounded-lg text-[#9CA3AF] hover:text-[#F87171] transition-colors">
+              <FiLogOut className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </header>
 
-      {/* Main Layout */}
-      <div className="flex pt-20">
+      <div className="flex pt-16 h-screen overflow-hidden">
         {/* Sidebar */}
-        <aside
-          className={`fixed left-0 top-20 bottom-0 w-64 bg-[#0A0A0F] border-r border-[#242437]/50 transition-transform duration-300 z-30 ${
-            isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } lg:translate-x-0`}
-        >
+        <aside className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 w-64 bg-[#0A0A0F] border-r border-[#242437] z-30 transition-transform duration-300 pt-20 lg:pt-4`}>
           <nav className="p-4 space-y-2">
-            {menuItems.map((item) => (
-              <motion.button
+            {navItems.map((item) => (
+              <button
                 key={item.id}
-                onClick={() => setSelectedView(item.id)}
-                whileHover={{ x: 4 }}
-                whileTap={{ scale: 0.98 }}
-                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all ${
+                onClick={() => {
+                  setSelectedView(item.id);
+                  if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                   selectedView === item.id
                     ? 'bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] text-white shadow-lg shadow-[#8B5CF6]/20'
-                    : 'text-[#9CA3AF] hover:bg-[#1E1F26] hover:text-[#E5E7EB]'
+                    : 'text-[#9CA3AF] hover:bg-[#1E1F26] hover:text-white'
                 }`}
               >
-                <item.icon className="w-5 h-5" />
-                <span className="font-semibold">{item.label}</span>
-              </motion.button>
+                <item.icon className={`w-5 h-5 ${selectedView === item.id ? 'animate-bounce' : ''}`} />
+                {item.label}
+              </button>
             ))}
           </nav>
+
+          {/* Sidebar Risk Card */}
+          <div className="absolute bottom-6 left-4 right-4">
+             <div className="glass-card p-4 bg-gradient-to-br from-[#1E1F26] to-[#0F0F14]">
+                <div className="flex items-center gap-2 mb-2 text-[#F59E0B]">
+                  <FiShield />
+                  <span className="text-xs font-bold uppercase">Risk Status</span>
+                </div>
+                <div className="h-2 bg-[#242437] rounded-full overflow-hidden mb-2">
+                  <div 
+                    className="h-full bg-[#F59E0B]" 
+                    style={{ width: `${(portfolioData?.riskScore || 0) * 10}%` }}
+                  />
+                </div>
+                <p className="text-xs text-[#9CA3AF]">
+                  {portfolioData?.riskProfile || 'Calculating...'}
+                </p>
+             </div>
+          </div>
         </aside>
 
-        {/* Main Content */}
-        <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'lg:ml-64' : 'ml-0'}`}>
-          <div className="w-full px-4 md:px-6 py-6 space-y-6">
-            {/* Portfolio Overview */}
-            <PortfolioOverview data={portfolioData} walletBalance={walletBalance} />
-
-            {/* Two Column Layout */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              {/* Left Column */}
-              <div className="xl:col-span-2 space-y-6">
-                <PerformanceChart historicalData={portfolioData?.historicalData || []} />
-                <AssetCards assets={portfolioData?.assets || []} />
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <AssetAllocationNested assetAllocation={portfolioData?.assetAllocation || []} />
-                  <RadarAnalysis portfolioMetrics={portfolioData?.portfolioMetrics || {}} />
+        {/* Main Content Scroll Area */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth" id="main-scroll">
+          <div className="max-w-7xl mx-auto space-y-6 pb-20">
+            
+            {/* View Logic */}
+            {selectedView === 'overview' && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                <PortfolioOverview data={portfolioData} walletBalance={walletBalance} />
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                  <div className="xl:col-span-2 space-y-6">
+                     <PerformanceChart historicalData={portfolioData?.historicalData} />
+                     <AssetCards assets={portfolioData?.assets} />
+                  </div>
+                  <div className="xl:col-span-1 space-y-6">
+                    <PortfolioHealth healthMetrics={portfolioData?.healthMetrics} />
+                    <AssetAllocationNested assetAllocation={portfolioData?.assetAllocation} />
+                  </div>
                 </div>
+              </motion.div>
+            )}
 
-                <ActivityHeatmap activityData={portfolioData?.activityData || []} />
-                <RiskAnalysis 
-                  riskScore={portfolioData?.riskScore}
-                  riskProfile={portfolioData?.riskProfile}
-                  assetAllocation={portfolioData?.assetAllocation}
-                />
-              </div>
+            {selectedView === 'analytics' && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <RadarAnalysis portfolioMetrics={portfolioData?.portfolioMetrics} />
+                   <AssetAllocationNested assetAllocation={portfolioData?.assetAllocation} />
+                </div>
+                <ActivityHeatmap activityData={portfolioData?.activityData} />
+              </motion.div>
+            )}
 
-              {/* Right Column */}
-              <div className="xl:col-span-1 space-y-6">
-                <PortfolioHealth healthMetrics={portfolioData?.healthMetrics || {}} />
-              </div>
-            </div>
+            {selectedView === 'tasks' && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <TaskCenter walletAddress={walletAddress} />
+              </motion.div>
+            )}
+
+            {selectedView === 'activity' && (
+               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <ActivityHeatmap activityData={portfolioData?.activityData} />
+               </motion.div>
+            )}
+
           </div>
         </main>
       </div>
+
+      {/* Floating AI Agent Button (FAB) */}
+      <motion.button
+        onClick={() => setIsAIModalOpen(true)}
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] flex items-center justify-center shadow-[0_0_30px_rgba(139,92,246,0.6)] border-2 border-white/20"
+      >
+        <FiCpu className="w-8 h-8 text-white" />
+        <span className="absolute -top-1 -right-1 flex h-4 w-4">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-4 w-4 bg-green-500 border-2 border-[#8B5CF6]"></span>
+        </span>
+      </motion.button>
     </div>
   );
 }

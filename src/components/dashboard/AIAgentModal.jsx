@@ -185,7 +185,7 @@ Be concise, actionable, and data-driven.`
                     >
                       {message.role === 'assistant' ? (
                         <ReactMarkdown
-                          className="prose prose-invert prose-sm max-w-none"
+                        //   className="prose prose-invert prose-sm max-w-none"
                           components={{
                             h2: ({node, ...props}) => <h2 className="text-lg font-bold text-[#8B5CF6] mt-3 mb-2" {...props} />,
                             strong: ({node, ...props}) => <strong className="text-[#A78BFA] font-semibold" {...props} />,
