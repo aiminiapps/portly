@@ -1,24 +1,31 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import useSWR from 'swr';
 import { 
   FiTrendingUp, FiShield, FiActivity, FiLayers, 
-  FiPieChart, FiBarChart2, FiDollarSign, FiZap,
-  FiAlertCircle, FiSettings, FiLogOut, FiMenu, FiX
+  FiPieChart, FiBarChart2, FiZap, FiCpu,
+  FiLogOut, FiMenu, FiX
 } from 'react-icons/fi';
-import { connectWallet, disconnectWallet, watchAccount, getBalance } from '@/lib/metamask';
+import { 
+  connectWallet, 
+  disconnectWallet, 
+  watchAccount, 
+  getBalance,
+  getAccounts 
+} from '@/lib/metamask';
+
 import PortfolioOverview from '@/components/dashboard/PortfolioOverview';
 import AssetCards from '@/components/dashboard/AssetCards';
 import PerformanceChart from '@/components/dashboard/PerformanceChart';
 import RiskAnalysis from '@/components/dashboard/RiskAnalysis';
-import AIInsightPanel from '@/components/dashboard/AIInsightPanel';
 import WalletConnect from '@/components/dashboard/WalletConnect';
 import PortfolioHealth from '@/components/dashboard/PortfolioHealth';
 import RadarAnalysis from '@/components/dashboard/RadarAnalysis';
 import ActivityHeatmap from '@/components/dashboard/ActivityHeatmap';
 import AssetAllocationNested from '@/components/dashboard/AssetAllocationNested';
+import AIAgentModal from '@/components/dashboard/AIAgentModal';
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -27,46 +34,49 @@ export default function AIDashboard() {
   const [walletBalance, setWalletBalance] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [connectionError, setConnectionError] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedView, setSelectedView] = useState('overview');
+  const [isClient, setIsClient] = useState(false);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
-  // Fetch portfolio data with SWR
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const { data: portfolioData, error, isLoading, mutate } = useSWR(
     walletAddress ? `/api/data?wallet=${walletAddress}` : null,
     fetcher,
     {
       refreshInterval: 30000,
       revalidateOnFocus: true,
-      revalidateOnReconnect: true
+      revalidateOnReconnect: true,
     }
   );
 
-  // Check for existing wallet connection on mount
   useEffect(() => {
-    const checkConnection = async () => {
+    if (!isClient) return;
+
+    const checkExistingConnection = async () => {
       try {
-        const { initializeMetaMask } = await import('@/lib/metamask');
-        const provider = initializeMetaMask();
-        
-        if (provider) {
-          const accounts = await provider.request({ method: 'eth_accounts' });
-          if (accounts.length > 0) {
-            setWalletAddress(accounts[0]);
-            setIsConnected(true);
-            const balance = await getBalance(accounts[0]);
-            setWalletBalance(balance);
-          }
+        const accounts = await getAccounts();
+        if (accounts.length > 0) {
+          setWalletAddress(accounts[0]);
+          setIsConnected(true);
+          const balance = await getBalance(accounts[0]);
+          setWalletBalance(balance);
         }
       } catch (error) {
-        console.error('Error checking wallet connection:', error);
+        console.error('Error checking existing connection:', error);
       }
     };
-    checkConnection();
-  }, []);
 
-  // Watch for account changes
+    const timeout = setTimeout(checkExistingConnection, 100);
+    return () => clearTimeout(timeout);
+  }, [isClient]);
+
   useEffect(() => {
-    if (!isConnected) return;
+    if (!isConnected || !isClient) return;
 
     const unwatch = watchAccount(async (newAddress) => {
       if (newAddress) {
@@ -82,12 +92,14 @@ export default function AIDashboard() {
     return () => {
       if (unwatch) unwatch();
     };
-  }, [isConnected, mutate]);
+  }, [isConnected, isClient, mutate]);
 
   const handleConnect = async () => {
     setIsConnecting(true);
+    setConnectionError(null);
+
     try {
-      const { address, chainId } = await connectWallet();
+      const { address } = await connectWallet();
       setWalletAddress(address);
       setIsConnected(true);
       const balance = await getBalance(address);
@@ -95,30 +107,46 @@ export default function AIDashboard() {
       mutate();
     } catch (error) {
       console.error('Connection error:', error);
-      alert('Failed to connect wallet. Please try again.');
+      setConnectionError(error.message || 'Failed to connect wallet');
     } finally {
       setIsConnecting(false);
     }
   };
 
-  const handleDisconnect = async () => {
-    await disconnectWallet();
+  const handleDisconnect = () => {
+    disconnectWallet();
     setWalletAddress(null);
     setIsConnected(false);
     setWalletBalance(0);
+    setConnectionError(null);
   };
+
+  if (!isClient) {
+    return (
+      <div className="min-h-screen w-full bg-[#0A0A0F] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#8B5CF6] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#E5E7EB]">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen w-full bg-[#0F0F14] flex items-center justify-center p-4">
-        <WalletConnect onConnect={handleConnect} isConnecting={isConnecting} />
+      <div className="min-h-screen w-full bg-[#0A0A0F] flex items-center justify-center p-4">
+        <WalletConnect 
+          onConnect={handleConnect} 
+          isConnecting={isConnecting}
+          error={connectionError}
+        />
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen w-full bg-[#0F0F14] flex items-center justify-center">
+      <div className="min-h-screen w-full bg-[#0A0A0F] flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="relative w-20 h-20 mx-auto">
             <div className="absolute inset-0 border-4 border-[#8B5CF6]/20 rounded-full"></div>
@@ -126,7 +154,7 @@ export default function AIDashboard() {
           </div>
           <div>
             <p className="text-[#E5E7EB] text-lg font-semibold">Analyzing Portfolio</p>
-            <p className="text-[#9CA3AF] text-sm mt-1">Fetching your blockchain data...</p>
+            <p className="text-[#9CA3AF] text-sm mt-1">Fetching blockchain data...</p>
           </div>
         </div>
       </div>
@@ -141,25 +169,33 @@ export default function AIDashboard() {
   ];
 
   return (
-    <div className="min-h-screen w-full bg-[#0F0F14] text-[#E5E7EB]">
+    <div className="min-h-screen w-full bg-[#0A0A0F] text-[#E5E7EB]">
+      {/* AI Agent Modal */}
+      <AIAgentModal
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+        portfolioData={portfolioData}
+        walletAddress={walletAddress}
+      />
+
       {/* Premium Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl bg-[#0F0F14]/90 border-b border-[#242437]">
-        <div className="w-full px-6 py-4">
+      <header className="fixed top-0 left-0 right-0 z-40 backdrop-blur-2xl bg-[#0A0A0F]/90 border-b border-[#242437]/50">
+        <div className="w-full px-4 md:px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Left Side */}
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4 md:gap-6">
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="lg:hidden p-2 hover:bg-[#1E1F26] rounded-lg transition-colors"
+                className="lg:hidden p-2.5 hover:bg-[#1E1F26] rounded-xl transition-colors"
               >
                 {isSidebarOpen ? <FiX className="w-6 h-6" /> : <FiMenu className="w-6 h-6" />}
               </button>
               
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7C3AED] via-[#8B5CF6] to-[#A78BFA] flex items-center justify-center shadow-lg shadow-[#8B5CF6]/30">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7C3AED] via-[#8B5CF6] to-[#A78BFA] flex items-center justify-center shadow-lg shadow-[#8B5CF6]/30 pulse-glow">
                   <FiZap className="w-7 h-7 text-white" />
                 </div>
-                <div>
+                <div className="hidden sm:block">
                   <h1 className="text-xl font-bold bg-gradient-to-r from-[#F9FAFB] to-[#A78BFA] bg-clip-text text-transparent">
                     PORTLY.AI
                   </h1>
@@ -169,7 +205,7 @@ export default function AIDashboard() {
             </div>
 
             {/* Right Side */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               {/* Wallet Info */}
               <div className="hidden md:flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#1E1F26] to-[#16171D] border border-[#242437]">
                 <div className="flex flex-col items-end">
@@ -187,9 +223,13 @@ export default function AIDashboard() {
                 </div>
               </div>
 
-              {/* Settings */}
-              <button className="p-2.5 rounded-xl bg-[#1E1F26] border border-[#242437] hover:border-[#8B5CF6] transition-all">
-                <FiSettings className="w-5 h-5" />
+              {/* AI Agent Button */}
+              <button
+                onClick={() => setIsAIModalOpen(true)}
+                className="btn-3d p-3 relative group"
+              >
+                <FiCpu className="w-5 h-5" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#4ADE80] rounded-full animate-pulse"></div>
               </button>
 
               {/* Disconnect */}
@@ -208,68 +248,49 @@ export default function AIDashboard() {
       <div className="flex pt-20">
         {/* Sidebar */}
         <aside
-          className={`fixed left-0 top-20 bottom-0 w-64 bg-[#0F0F14] border-r border-[#242437] transition-transform duration-300 z-40 ${
+          className={`fixed left-0 top-20 bottom-0 w-64 bg-[#0A0A0F] border-r border-[#242437]/50 transition-transform duration-300 z-30 ${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } lg:translate-x-0`}
         >
           <nav className="p-4 space-y-2">
             {menuItems.map((item) => (
-              <button
+              <motion.button
                 key={item.id}
                 onClick={() => setSelectedView(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                whileHover={{ x: 4 }}
+                whileTap={{ scale: 0.98 }}
+                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all ${
                   selectedView === item.id
                     ? 'bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] text-white shadow-lg shadow-[#8B5CF6]/20'
                     : 'text-[#9CA3AF] hover:bg-[#1E1F26] hover:text-[#E5E7EB]'
                 }`}
               >
                 <item.icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
-              </button>
+                <span className="font-semibold">{item.label}</span>
+              </motion.button>
             ))}
           </nav>
         </aside>
 
         {/* Main Content */}
         <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'lg:ml-64' : 'ml-0'}`}>
-          <div className="w-full px-6 py-6 space-y-6">
-            {/* Portfolio Overview Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <PortfolioOverview data={portfolioData} walletBalance={walletBalance} />
-            </motion.div>
+          <div className="w-full px-4 md:px-6 py-6 space-y-6">
+            {/* Portfolio Overview */}
+            <PortfolioOverview data={portfolioData} walletBalance={walletBalance} />
 
             {/* Two Column Layout */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              {/* Left Column - Main Charts (2/3 width) */}
+              {/* Left Column */}
               <div className="xl:col-span-2 space-y-6">
-                {/* Performance Chart */}
-                <PerformanceChart 
-                  historicalData={portfolioData?.historicalData || []}
-                />
-
-                {/* Asset Cards Grid */}
+                <PerformanceChart historicalData={portfolioData?.historicalData || []} />
                 <AssetCards assets={portfolioData?.assets || []} />
-
-                {/* Nested Pie & Radar Side by Side */}
+                
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <AssetAllocationNested 
-                    assetAllocation={portfolioData?.assetAllocation || []}
-                  />
-                  <RadarAnalysis 
-                    portfolioMetrics={portfolioData?.portfolioMetrics || {}}
-                  />
+                  <AssetAllocationNested assetAllocation={portfolioData?.assetAllocation || []} />
+                  <RadarAnalysis portfolioMetrics={portfolioData?.portfolioMetrics || {}} />
                 </div>
 
-                {/* Activity Heatmap */}
-                <ActivityHeatmap 
-                  activityData={portfolioData?.activityData || []}
-                />
-
-                {/* Risk Analysis */}
+                <ActivityHeatmap activityData={portfolioData?.activityData || []} />
                 <RiskAnalysis 
                   riskScore={portfolioData?.riskScore}
                   riskProfile={portfolioData?.riskProfile}
@@ -277,18 +298,9 @@ export default function AIDashboard() {
                 />
               </div>
 
-              {/* Right Column - AI & Health (1/3 width) */}
+              {/* Right Column */}
               <div className="xl:col-span-1 space-y-6">
-                {/* Portfolio Health Gauges */}
-                <PortfolioHealth 
-                  healthMetrics={portfolioData?.healthMetrics || {}}
-                />
-
-                {/* AI Insight Panel */}
-                <AIInsightPanel 
-                  portfolioData={portfolioData}
-                  walletAddress={walletAddress}
-                />
+                <PortfolioHealth healthMetrics={portfolioData?.healthMetrics || {}} />
               </div>
             </div>
           </div>
