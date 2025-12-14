@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import useSWR from 'swr';
 import { 
   FiPieChart, FiBarChart2, FiShield, FiActivity, 
   FiZap, FiCpu, FiLogOut, FiMenu, FiX, FiCheckSquare 
 } from 'react-icons/fi';
-// Assuming you have these helpers or standard wallet connect logic
 import { 
   connectWallet, disconnectWallet, watchAccount, getBalance, getAccounts 
 } from '@/lib/metamask';
