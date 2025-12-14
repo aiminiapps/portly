@@ -3,8 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import ReactECharts from 'echarts-for-react';
-import * as echarts from 'echarts'; // Ensure import for gradients
-import { FiMaximize2, FiInfo } from 'react-icons/fi';
+import * as echarts from 'echarts';
 import { GiRadarSweep } from "react-icons/gi";
 
 export default function RadarAnalysis({ portfolioMetrics }) {
