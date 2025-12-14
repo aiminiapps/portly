@@ -255,7 +255,7 @@ export default function AIDashboard() {
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        whileTap={{ scale : 0.9 }}
         className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] flex items-center justify-center shadow-[0_0_30px_rgba(139,92,246,0.6)] border-2 border-white/20"
       >
         <FiCpu className="w-8 h-8 text-white" />
