@@ -17,9 +17,6 @@ export default function RadarAnalysis({ portfolioMetrics }) {
     marketCap: 0
   });
 
-  // ---------------------------------------------------------
-  // 1. SMART SCORING ALGORITHM
-  // ---------------------------------------------------------
   useEffect(() => {
     const calculateMetrics = (assets, totalValue) => {
       if (!assets || assets.length === 0) return null;

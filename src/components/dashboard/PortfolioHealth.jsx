@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactECharts from 'echarts-for-react';
 import * as echarts from 'echarts';
 import ReactMarkdown from 'react-markdown';
-import { FiTarget, FiZap, FiCpu } from 'react-icons/fi';
+import { FiZap, FiCpu } from 'react-icons/fi';
 
 export default function PortfolioHealth({ healthMetrics, assets }) {
   const [metrics, setMetrics] = useState({ diversification: 0, liquidity: 0, performance: 0 });

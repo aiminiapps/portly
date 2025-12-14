@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import ReactECharts from 'echarts-for-react';
 import { FiTrendingUp, FiTrendingDown, FiZap, FiCalendar, FiActivity } from 'react-icons/fi';
 
