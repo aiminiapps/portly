@@ -1,257 +1,311 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import ReactECharts from 'echarts-for-react';
-import { FiCalendar, FiActivity } from 'react-icons/fi';
+import ReactMarkdown from 'react-markdown';
+import { FiCalendar, FiActivity, FiZap, FiCpu, FiClock, FiTarget } from 'react-icons/fi';
 
 export default function ActivityHeatmap({ activityData }) {
-  // Generate activity data for the last 12 months if not provided
-  const generateActivityData = () => {
+  const [data, setData] = useState([]);
+  const [aiAnalysis, setAiAnalysis] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(false);
+
+  // 1. Data Logic: Props -> LocalStorage -> Mock
+  useEffect(() => {
     if (activityData && activityData.length > 0) {
-      return activityData;
+      setData(activityData);
+    } else {
+      // Try LocalStorage
+      const cached = localStorage.getItem('portly_data_cache');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed.activityData && parsed.activityData.length > 0) {
+            setData(parsed.activityData);
+            return;
+          }
+        } catch (e) { console.error(e); }
+      }
+
+      // Fallback: Generate visually pleasing mock data for demo
+      const mockData = [];
+      const startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - 12);
+      for (let i = 0; i < 365; i++) {
+        const date = new Date(startDate);
+        date.setDate(date.getDate() + i);
+        // Weighted random for realistic "clusters" of activity
+        const base = Math.random();
+        const activity = base > 0.7 ? Math.floor(Math.random() * 50) : 0;
+        mockData.push([
+          date.toISOString().split('T')[0],
+          activity
+        ]);
+      }
+      setData(mockData);
     }
+  }, [activityData]);
 
-    const data = [];
-    const startDate = new Date();
-    startDate.setMonth(startDate.getMonth() - 12);
+  // 2. Statistics Calculation
+  const stats = useMemo(() => {
+    if (!data.length) return { total: 0, avg: 0, max: 0, active: 0, streak: 0 };
+    
+    const total = data.reduce((sum, item) => sum + item[1], 0);
+    const activeDays = data.filter(item => item[1] > 0).length;
+    
+    return {
+      total,
+      avg: (total / data.length).toFixed(1),
+      max: Math.max(...data.map(item => item[1])),
+      active: activeDays,
+      consistency: ((activeDays / 365) * 100).toFixed(1),
+      streak: calculateCurrentStreak(data)
+    };
+  }, [data]);
 
-    for (let i = 0; i < 365; i++) {
-      const date = new Date(startDate);
-      date.setDate(date.getDate() + i);
-      
-      // Generate random activity (0-100 transactions)
-      const activity = Math.floor(Math.random() * 100);
-      
-      data.push([
-        date.toISOString().split('T')[0],
-        activity
-      ]);
+  // 3. AI Handler
+  const analyzeHabits = async () => {
+    if (showAnalysis) { setShowAnalysis(false); return; }
+    setIsAnalyzing(true);
+    
+    try {
+      const response = await fetch('/api/agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{
+            role: "user",
+            content: `Analyze my transaction activity:
+            - Active Days: ${stats.active}/365
+            - Consistency: ${stats.consistency}%
+            - Current Streak: ${stats.streak} days
+            - Total Tx: ${stats.total}
+            
+            Give 3 short, markdown bullet points on my trading habits.`
+          }]
+        })
+      });
+
+      if (response.ok) {
+        const resData = await response.json();
+        setAiAnalysis(resData.reply);
+        setShowAnalysis(true);
+      } else {
+        throw new Error("API Error");
+      }
+    } catch (e) {
+      setAiAnalysis(`**Habit Analysis:**\n* **Consistency:** ${stats.consistency > 20 ? 'High engagement levels.' : 'Sporadic activity detected.'}\n* **Momentum:** Current streak indicates ${stats.streak > 3 ? 'strong' : 'building'} momentum.\n* **Volume:** Averaging ${stats.avg} tx/day suggests ${stats.avg > 1 ? 'active trading' : 'holding strategy'}.`);
+      setShowAnalysis(true);
+    } finally {
+      setIsAnalyzing(false);
     }
-
-    return data;
   };
 
-  const data = generateActivityData();
-
-  // Calculate statistics
-  const totalActivity = data.reduce((sum, item) => sum + item[1], 0);
-  const avgActivity = (totalActivity / data.length).toFixed(1);
-  const maxActivity = Math.max(...data.map(item => item[1]));
-  const activeDays = data.filter(item => item[1] > 0).length;
-
-  const option = {
+  // 4. ECharts Option
+  const option = useMemo(() => ({
     backgroundColor: 'transparent',
     tooltip: {
       position: 'top',
-      backgroundColor: 'rgba(30, 31, 38, 0.95)',
-      borderColor: '#242437',
+      backgroundColor: 'rgba(18, 18, 20, 0.9)',
+      borderColor: 'rgba(255, 255, 255, 0.1)',
       borderWidth: 1,
-      textStyle: {
-        color: '#E5E7EB',
-        fontSize: 12
-      },
+      padding: [10, 15],
+      textStyle: { color: '#E5E7EB', fontSize: 12 },
       formatter: (params) => {
-        const date = new Date(params.value[0]);
-        const formattedDate = date.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric'
-        });
-        return `
-          <div style="padding: 4px;">
-            <div style="color: #9CA3AF; font-size: 11px; margin-bottom: 4px;">
-              ${formattedDate}
-            </div>
-            <div style="font-size: 14px; font-weight: bold; color: #F9FAFB;">
-              ${params.value[1]} Transactions
-            </div>
-          </div>
-        `;
+        const date = new Date(params.value[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        return `<div class="font-medium text-white">${params.value[1]} Transactions</div><div class="text-[10px] text-gray-400 mt-1">${date}</div>`;
       }
     },
     visualMap: {
       min: 0,
-      max: maxActivity,
-      calculable: true,
+      max: stats.max || 10,
+      calculable: false,
       orient: 'horizontal',
       left: 'center',
-      bottom: '0%',
-      textStyle: {
-        color: '#9CA3AF',
-        fontSize: 11
-      },
-      inRange: {
-        color: ['#16171D', '#7C3AED', '#8B5CF6', '#A78BFA']
-      }
+      bottom: 0,
+      itemWidth: 12,
+      itemHeight: 12,
+      textStyle: { color: '#6B7280', fontSize: 10 },
+      inRange: { color: ['#1E1E24', '#4C1D95', '#7C3AED', '#A78BFA'] } // Dark to Purple Gradient
     },
     calendar: {
-      top: '80',
-      left: '40',
-      right: '40',
-      cellSize: ['auto', 14],
+      top: 60,
+      left: 30,
+      right: 30,
+      cellSize: ['auto', 13],
       range: [
-        new Date(new Date().setMonth(new Date().getMonth() - 12)).toISOString().split('T')[0],
+        new Date(new Date().setMonth(new Date().getMonth() - 11)).toISOString().split('T')[0],
         new Date().toISOString().split('T')[0]
       ],
       itemStyle: {
         borderWidth: 2,
-        borderColor: '#0F0F14',
-        borderRadius: 4
+        borderColor: 'rgba(0,0,0,0)', // Transparent borders for gap effect
+        color: '#1E1E24'
       },
-      yearLabel: {
-        show: true,
-        color: '#E5E7EB',
-        fontSize: 14,
-        fontWeight: 'bold'
-      },
+      yearLabel: { show: false },
       monthLabel: {
-        show: true,
-        color: '#9CA3AF',
-        fontSize: 11
+        nameMap: 'en',
+        color: '#6B7280',
+        fontSize: 10
       },
       dayLabel: {
-        show: true,
-        color: '#9CA3AF',
-        fontSize: 10,
-        firstDay: 0,
-        nameMap: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        firstDay: 1,
+        nameMap: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+        color: '#4B5563',
+        fontSize: 9
       },
-      splitLine: {
-        show: true,
-        lineStyle: {
-          color: '#242437',
-          width: 1,
-          type: 'solid'
-        }
-      }
+      splitLine: { show: false }
     },
-    series: [
-      {
-        type: 'heatmap',
-        coordinateSystem: 'calendar',
-        data: data,
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowColor: 'rgba(139, 92, 246, 0.5)',
-            borderColor: '#8B5CF6',
-            borderWidth: 2
-          }
-        }
-      }
-    ]
-  };
+    series: [{
+      type: 'heatmap',
+      coordinateSystem: 'calendar',
+      data: data,
+      itemStyle: { borderRadius: 3 }
+    }]
+  }), [data, stats]);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-card p-6 space-y-6"
+      className="rounded-3xl border border-white/5 bg-[#121214]/60 backdrop-blur-xl p-6 relative overflow-hidden"
     >
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-2">
-          <FiCalendar className="w-5 h-5 text-[#8B5CF6]" />
-          <h3 className="text-lg font-semibold text-[#F9FAFB]">Transaction Activity</h3>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-white/5 border border-white/5 text-[#8B5CF6]">
+            <FiCalendar className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-white">On-Chain Activity</h3>
+            <p className="text-[10px] text-white/40">Transaction frequency heatmap</p>
+          </div>
         </div>
 
-        {/* Stats */}
-        <div className="flex items-center gap-4">
+        {/* Quick Stats Row */}
+        <div className="flex items-center gap-6 px-4 py-2 rounded-xl bg-white/5 border border-white/5">
           <div className="text-right">
-            <p className="text-xs text-[#9CA3AF]">Active Days</p>
-            <p className="text-lg font-bold text-[#F9FAFB]">{activeDays}</p>
+            <p className="text-[10px] text-white/40 uppercase">Streak</p>
+            <div className="flex items-center justify-end gap-1 text-[#8B5CF6]">
+              <FiZap className="w-3 h-3" />
+              <span className="text-sm font-bold">{stats.streak}d</span>
+            </div>
           </div>
-          <div className="w-px h-10 bg-[#242437]"></div>
+          <div className="w-px h-6 bg-white/10"></div>
           <div className="text-right">
-            <p className="text-xs text-[#9CA3AF]">Avg/Day</p>
-            <p className="text-lg font-bold text-[#8B5CF6]">{avgActivity}</p>
-          </div>
-          <div className="w-px h-10 bg-[#242437]"></div>
-          <div className="text-right">
-            <p className="text-xs text-[#9CA3AF]">Total</p>
-            <p className="text-lg font-bold text-[#4ADE80]">{totalActivity.toLocaleString()}</p>
+            <p className="text-[10px] text-white/40 uppercase">Active</p>
+            <span className="text-sm font-bold text-white">{stats.active} Days</span>
           </div>
         </div>
       </div>
 
-      {/* Activity Legend */}
-      <div className="flex items-center gap-3 text-xs text-[#9CA3AF]">
-        <FiActivity className="w-4 h-4" />
-        <span>Less</span>
-        <div className="flex gap-1">
-          {[0, 1, 2, 3, 4].map((level) => (
-            <div
-              key={level}
-              className="w-4 h-4 rounded"
-              style={{
-                backgroundColor: ['#16171D', '#7C3AED', '#8B5CF6', '#A78BFA', '#C4B5FD'][level]
-              }}
-            />
-          ))}
+      {/* Heatmap Chart */}
+      <div className="relative min-h-[200px] w-full overflow-x-auto scrollbar-none">
+        <div className="min-w-[800px]">
+          <ReactECharts
+            option={option}
+            style={{ height: '200px', width: '100%' }}
+            opts={{ renderer: 'svg' }}
+          />
         </div>
-        <span>More</span>
       </div>
 
-      {/* Calendar Heatmap */}
-      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-[#242437] scrollbar-track-transparent">
-        <ReactECharts
-          option={option}
-          style={{ height: '220px', minWidth: '800px' }}
-          opts={{ renderer: 'svg' }}
-        />
+      {/* Insights Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+        {[
+          { label: 'Most Active', value: `${stats.max} Tx`, icon: FiActivity },
+          { label: 'Consistency', value: `${stats.consistency}%`, icon: FiTarget },
+          { label: 'Total Volume', value: stats.total.toLocaleString(), icon: FiClock }
+        ].map((stat, i) => (
+          <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
+            <div className="p-2 rounded-lg bg-[#1E1E24] text-white/40">
+              <stat.icon className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-[10px] text-white/40 uppercase tracking-wider">{stat.label}</p>
+              <p className="text-sm font-bold text-white">{stat.value}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Activity Insights */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-[#242437]">
-        <div className="p-4 rounded-xl bg-[#1E1F26]/50 border border-[#242437]">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 rounded-full bg-[#8B5CF6]"></div>
-            <span className="text-xs text-[#9CA3AF]">Most Active Day</span>
-          </div>
-          <p className="text-lg font-bold text-[#F9FAFB]">
-            {maxActivity} Transactions
-          </p>
-        </div>
+      {/* AI Analysis Footer */}
+      <div className="mt-4 pt-4 border-t border-white/5">
+        <button
+          onClick={analyzeHabits}
+          disabled={isAnalyzing}
+          className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-all duration-300 ${
+            showAnalysis 
+              ? 'bg-[#8B5CF6] border-[#8B5CF6] text-white shadow-[0_0_15px_rgba(139,92,246,0.3)]'
+              : 'bg-white/5 border-white/5 text-white/60 hover:bg-white/10 hover:text-white'
+          }`}
+        >
+          {isAnalyzing ? <FiCpu className="w-4 h-4 animate-spin" /> : <FiZap className={`w-4 h-4 ${showAnalysis ? 'fill-white' : ''}`} />}
+          <span className="text-xs font-medium uppercase tracking-wide">
+            {isAnalyzing ? 'Analyzing Pattern...' : showAnalysis ? 'Close Insights' : 'AI Habit Analysis'}
+          </span>
+        </button>
 
-        <div className="p-4 rounded-xl bg-[#1E1F26]/50 border border-[#242437]">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 rounded-full bg-[#4ADE80]"></div>
-            <span className="text-xs text-[#9CA3AF]">Consistency</span>
-          </div>
-          <p className="text-lg font-bold text-[#F9FAFB]">
-            {((activeDays / 365) * 100).toFixed(1)}%
-          </p>
-        </div>
-
-        <div className="p-4 rounded-xl bg-[#1E1F26]/50 border border-[#242437]">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 rounded-full bg-[#3B82F6]"></div>
-            <span className="text-xs text-[#9CA3AF]">Current Streak</span>
-          </div>
-          <p className="text-lg font-bold text-[#F9FAFB]">
-            {calculateCurrentStreak(data)} Days
-          </p>
-        </div>
+        <AnimatePresence>
+          {showAnalysis && aiAnalysis && (
+            <motion.div
+              initial={{ height: 0, opacity: 0, marginTop: 0 }}
+              animate={{ height: 'auto', opacity: 1, marginTop: 12 }}
+              exit={{ height: 0, opacity: 0, marginTop: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="p-4 rounded-xl bg-[#1E1E24] border border-white/5">
+                <div className="prose prose-invert prose-sm max-w-none">
+                  <ReactMarkdown
+                    components={{
+                      ul: ({node, ...props}) => <ul className="space-y-2 m-0 p-0 list-none" {...props} />,
+                      li: ({node, ...props}) => (
+                        <li className="flex gap-2 text-xs text-white/80 leading-relaxed">
+                          <span className="mt-1.5 w-1 h-1 rounded-full bg-[#8B5CF6] flex-shrink-0" />
+                          <span>{props.children}</span>
+                        </li>
+                      ),
+                      strong: ({node, ...props}) => <strong className="text-[#8B5CF6] font-semibold" {...props} />,
+                      p: ({node, ...props}) => <span {...props} />
+                    }}
+                  >
+                    {aiAnalysis}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );
 }
 
-// Helper function to calculate current streak
+// Helper: Calculate Streak based on dates
 function calculateCurrentStreak(data) {
-  let streak = 0;
+  if (!data || data.length === 0) return 0;
+  
+  // Sort by date descending
+  const sorted = [...data].sort((a, b) => new Date(b[0]) - new Date(a[0]));
   const today = new Date().toISOString().split('T')[0];
   
-  // Sort data by date descending
-  const sortedData = [...data].sort((a, b) => new Date(b[0]) - new Date(a[0]));
-  
-  for (const [date, value] of sortedData) {
-    if (value > 0) {
-      streak++;
-    } else if (date < today) {
-      break;
+  let streak = 0;
+  let hasStarted = false;
+
+  // Check if activity started today or yesterday (allow 1 day gap for active streak)
+  for (const [date, count] of sorted) {
+    if (!hasStarted) {
+      if (date === today && count > 0) hasStarted = true;
+      else if (date < today && count > 0) hasStarted = true; // Started yesterday?
+      else if (new Date(today) - new Date(date) > 86400000 * 2) return 0; // Gap > 2 days
+    }
+
+    if (hasStarted) {
+      if (count > 0) streak++;
+      else break;
     }
   }
-  
   return streak;
 }
