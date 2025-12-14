@@ -4,57 +4,102 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import ReactECharts from 'echarts-for-react';
 import * as echarts from 'echarts';
+
 import { GiRadarSweep } from "react-icons/gi";
 
 export default function RadarAnalysis({ portfolioMetrics }) {
   const [metrics, setMetrics] = useState({
-    diversification: 50,
-    liquidity: 50,
-    growth: 50,
-    stability: 50,
-    volume: 50,
-    marketCap: 50
+    diversification: 0,
+    liquidity: 0,
+    growth: 0,
+    stability: 0,
+    volume: 0,
+    marketCap: 0
   });
 
-  // 1. Data Hydration Strategy
+  // ---------------------------------------------------------
+  // 1. SMART SCORING ALGORITHM
+  // ---------------------------------------------------------
   useEffect(() => {
+    const calculateMetrics = (assets, totalValue) => {
+      if (!assets || assets.length === 0) return null;
+
+      // 1. DIVERSIFICATION: Target 6+ assets for max score
+      // 1 asset = 20pts, 6 assets = 100pts
+      const diversification = Math.min(100, Math.max(20, assets.length * 16));
+
+      // 2. LIQUIDITY: Check for Stables & Blue Chips
+      const stables = ['USDT', 'USDC', 'DAI', 'FDUSD'];
+      const blueChips = ['ETH', 'BTC', 'BNB', 'SOL'];
+      const hasStable = assets.some(a => stables.some(s => a.symbol.includes(s)));
+      const hasBlueChip = assets.some(a => blueChips.some(s => a.symbol.includes(s)));
+      
+      let liquidity = 30; // Base
+      if (hasStable) liquidity += 40;
+      if (hasBlueChip) liquidity += 20;
+      if (assets.length > 3) liquidity += 10;
+
+      // 3. GROWTH: Based on 24h Change
+      // Avg change of +5% = 80 score, -5% = 40 score
+      const avgChange = assets.reduce((acc, curr) => acc + (parseFloat(curr.change24h) || 0), 0) / assets.length;
+      let growth = 50 + (avgChange * 4); 
+      growth = Math.min(100, Math.max(20, growth)); // Clamp 20-100
+
+      // 4. STABILITY: Weighted by Stablecoin/BTC %
+      // If 50% of portfolio is Stable/BTC -> High Stability
+      const stableValue = assets
+        .filter(a => stables.includes(a.symbol) || a.symbol === 'BTC')
+        .reduce((acc, curr) => acc + (curr.value || 0), 0);
+      const stabilityRatio = totalValue > 0 ? (stableValue / totalValue) : 0;
+      const stability = Math.min(100, Math.max(30, Math.round(stabilityRatio * 100) + 30));
+
+      // 5. MARKET CAP: Do you hold the big giants?
+      const marketCapScore = hasBlueChip ? 85 : 45;
+
+      // 6. VOLUME: Based on Portfolio Value (Log Scale)
+      // $100 = 30pts, $10,000 = 70pts, $1M = 95pts
+      const volume = Math.min(100, Math.max(20, Math.round(Math.log10(totalValue + 1) * 15) + 10));
+
+      return {
+        diversification: Math.round(diversification),
+        liquidity: Math.round(liquidity),
+        growth: Math.round(growth),
+        stability: Math.round(stability),
+        volume: Math.round(volume),
+        marketCap: Math.round(marketCapScore)
+      };
+    };
+
+    // LOGIC FLOW: Props -> LocalStorage(Metrics) -> LocalStorage(Assets)
     if (portfolioMetrics) {
       setMetrics(portfolioMetrics);
-      localStorage.setItem('portly_radar_metrics', JSON.stringify(portfolioMetrics));
     } else {
-      // Fallback: Check local storage for pre-calculated metrics
-      const cached = localStorage.getItem('portly_radar_metrics');
-      if (cached) {
+      // Try calculating from cached assets
+      const cachedData = localStorage.getItem('portly_data_cache');
+      if (cachedData) {
         try {
-          setMetrics(JSON.parse(cached));
-          return;
-        } catch (e) { console.error(e); }
-      }
-
-      // Deep Fallback: Calculate from cached assets if metrics are missing
-      const cachedAssetsStr = localStorage.getItem('portly_data_cache');
-      if (cachedAssetsStr) {
-        try {
-          const data = JSON.parse(cachedAssetsStr);
-          const assets = data.assets || [];
-          if (assets.length > 0) {
-             // Basic heuristic calculation
-             const calculated = {
-                diversification: Math.min(100, assets.length * 15),
-                liquidity: assets.some(a => ['USDC','USDT'].includes(a.symbol)) ? 80 : 40,
-                growth: 65, // Placeholder logic
-                stability: 55, // Placeholder logic
-                volume: 70, // Placeholder logic
-                marketCap: 60 // Placeholder logic
-             };
-             setMetrics(calculated);
+          const parsed = JSON.parse(cachedData);
+          if (parsed.assets && parsed.assets.length > 0) {
+            const computed = calculateMetrics(parsed.assets, parsed.totalValue || 0);
+            if (computed) {
+              setMetrics(computed);
+              return;
+            }
           }
-        } catch (e) { console.error("Asset calc error", e); }
+        } catch (e) { console.error("Radar calc error", e); }
       }
+      
+      // Default baseline if absolutely no data found (prevents 0 chart)
+      setMetrics({
+        diversification: 30, liquidity: 40, growth: 50,
+        stability: 40, volume: 30, marketCap: 40
+      });
     }
   }, [portfolioMetrics]);
 
-  // 2. Chart Options (Premium Style)
+  // ---------------------------------------------------------
+  // 2. CHART CONFIGURATION
+  // ---------------------------------------------------------
   const option = useMemo(() => ({
     backgroundColor: 'transparent',
     radar: {
@@ -67,14 +112,14 @@ export default function RadarAnalysis({ portfolioMetrics }) {
         { name: 'Market Cap', max: 100 }
       ],
       shape: 'polygon',
-      center: ['50%', '50%'],
+      center: ['50%', '55%'],
       radius: '65%',
       splitNumber: 4,
       axisName: {
-        color: 'rgba(255, 255, 255, 0.4)',
+        color: 'rgba(255, 255, 255, 0.5)',
         fontSize: 10,
-        fontFamily: 'inherit',
-        fontWeight: 600
+        fontWeight: 600,
+        fontFamily: 'inherit'
       },
       splitLine: {
         lineStyle: {
@@ -85,35 +130,26 @@ export default function RadarAnalysis({ portfolioMetrics }) {
       splitArea: {
         show: true,
         areaStyle: {
-          color: ['rgba(139, 92, 246, 0.01)', 'rgba(139, 92, 246, 0.05)']
+          color: ['rgba(139, 92, 246, 0.02)', 'rgba(139, 92, 246, 0.06)']
         }
       },
       axisLine: {
-        lineStyle: {
-          color: 'rgba(255, 255, 255, 0.1)'
-        }
+        lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
       }
     },
     series: [{
-      name: 'Portfolio Analysis',
       type: 'radar',
-      symbol: 'circle',
-      symbolSize: 6,
-      itemStyle: {
-        color: '#fff',
-        borderColor: '#8B5CF6',
-        borderWidth: 2,
-        shadowColor: '#8B5CF6',
-        shadowBlur: 10
-      },
+      symbol: 'none', // Cleaner look without dots on corners
       lineStyle: {
-        width: 2,
-        color: '#8B5CF6'
+        width: 3,
+        color: '#8B5CF6',
+        shadowColor: 'rgba(139, 92, 246, 0.5)',
+        shadowBlur: 10
       },
       areaStyle: {
         color: new echarts.graphic.RadialGradient(0.5, 0.5, 1, [
-          { offset: 0, color: 'rgba(139, 92, 246, 0.6)' },
-          { offset: 1, color: 'rgba(139, 92, 246, 0.1)' }
+          { offset: 0, color: 'rgba(139, 92, 246, 0.5)' },
+          { offset: 1, color: 'rgba(139, 92, 246, 0.05)' }
         ])
       },
       data: [{
@@ -139,57 +175,68 @@ export default function RadarAnalysis({ portfolioMetrics }) {
       animate={{ opacity: 1, scale: 1 }}
       className="flex flex-col h-full rounded-3xl border border-white/5 bg-[#121214]/60 backdrop-blur-xl p-6 relative overflow-hidden group"
     >
-      {/* Glow Effect */}
-      <div className="absolute -top-20 -left-20 w-40 h-40 bg-[#8B5CF6]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#8B5CF6]/20 transition-colors duration-500"></div>
+      {/* Background Ambience */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#8B5CF6]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+      <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-[#8B5CF6]/10 rounded-full blur-[60px] pointer-events-none"></div>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 z-10">
+      <div className="flex items-center justify-between mb-2 z-10">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-white/5 border border-white/5">
-            <GiRadarSweep className="w-4 h-4 text-[#8B5CF6]" />
+          <div className="p-2 rounded-xl bg-white/5 border border-white/5 text-[#8B5CF6]">
+            <GiRadarSweep className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-medium text-white">Metrics Radar</h3>
-            <p className="text-[10px] text-white/40">Multi-vector analysis</p>
+            <h3 className="text-sm font-medium text-white">Portfolio DNA</h3>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="text-[10px] text-white/40 uppercase tracking-wide">Analysis Active</span>
+            </div>
           </div>
         </div>
         
-        <div className="flex flex-col items-end">
-           <div className="text-2xl font-bold text-white">{overallScore}</div>
-           <span className="text-[10px] text-white/40 uppercase tracking-widest">Score</span>
+        <div className="text-right">
+           <div className="text-3xl font-bold text-white tracking-tight">{overallScore}</div>
+           <p className="text-[10px] text-white/40 uppercase tracking-widest">Global Score</p>
         </div>
       </div>
 
-      {/* Chart */}
-      <div className="flex-1 relative min-h-[250px] -mx-4">
+      {/* Chart Container */}
+      <div className="flex-1 relative min-h-[280px] -mx-4 -my-2">
         <ReactECharts
           option={option}
           style={{ height: '100%', width: '100%' }}
           opts={{ renderer: 'svg' }}
         />
+        
+        {/* Central HUD Element */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[40%] w-16 h-16 border border-white/5 rounded-full flex items-center justify-center pointer-events-none">
+          <div className="w-1 h-1 bg-white/20 rounded-full"></div>
+        </div>
       </div>
 
-      {/* Metrics Grid Footer */}
+      {/* Interactive Metric Grid */}
       <div className="grid grid-cols-3 gap-2 pt-4 border-t border-white/5 z-10">
         {Object.entries(metrics).map(([key, value], i) => (
-          <div 
+          <motion.div 
             key={key}
-            className="flex flex-col items-center p-2 rounded-lg hover:bg-white/5 transition-colors cursor-default"
+            whileHover={{ y: -2, backgroundColor: 'rgba(255,255,255,0.03)' }}
+            className="flex flex-col items-center p-2 rounded-lg transition-all cursor-default group/item"
           >
-            <span className="text-[10px] text-white/40 uppercase tracking-wider mb-1">
+            <span className="text-[9px] text-white/40 uppercase tracking-wider mb-1 group-hover/item:text-white/60 transition-colors">
               {key.replace(/([A-Z])/g, ' $1').trim()}
             </span>
-            <div className="flex items-center gap-1.5">
-              <div 
-                className={`w-1.5 h-1.5 rounded-full ${
-                  value > 70 ? 'bg-emerald-400 shadow-[0_0_5px_#34D399]' : 
-                  value > 40 ? 'bg-[#8B5CF6] shadow-[0_0_5px_#8B5CF6]' : 
-                  'bg-rose-400'
-                }`} 
-              />
+            <div className="flex items-center gap-2">
+              <div className="h-1 w-8 bg-white/10 rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${value}%` }}
+                  transition={{ delay: 0.5 + (i * 0.1), duration: 1 }}
+                  className={`h-full ${value > 75 ? 'bg-emerald-400' : value > 50 ? 'bg-[#8B5CF6]' : 'bg-rose-400'}`}
+                />
+              </div>
               <span className="text-xs font-bold text-white">{value}</span>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </motion.div>
