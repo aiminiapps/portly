@@ -24,6 +24,7 @@ import AssetAllocationNested from '@/components/dashboard/AssetAllocationNested'
 import AIAgentModal from '@/components/dashboard/AIAgentModal';
 import TaskCenter from '@/components/dashboard/TaskCenter';
 import Image from 'next/image';
+import AdvancedAnalytics from '@/components/dashboard/AdvancedAnalytics';
 
 // Fetcher with Caching Logic
 const fetcher = async (url) => {
@@ -323,6 +324,7 @@ export default function AIDashboard() {
                   className="space-y-6"
                 >
                   <PortfolioOverview data={portfolioData} walletBalance={walletBalance} />
+                  <AdvancedAnalytics/>
                   <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     <div className="xl:col-span-2 space-y-6">
                        <PerformanceChart historicalData={portfolioData?.historicalData} />
