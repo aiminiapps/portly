@@ -350,9 +350,6 @@ export default function PortfolioOverview({ data, walletBalance }) {
                                 <span className="text-xs text-white/40">Target ETH</span>
                                 <span className="text-xs font-bold text-[#8B5CF6]">{aiData.rebalance.ethTarget}%</span>
                              </div>
-                             <button className="w-full py-2 rounded-lg bg-[#8B5CF6]/10 text-[#8B5CF6] text-xs font-bold hover:bg-[#8B5CF6] hover:text-white transition-all">
-                                Execute Rebalance
-                             </button>
                           </div>
                        </div>
                        
