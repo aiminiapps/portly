@@ -23,6 +23,7 @@ import ActivityHeatmap from '@/components/dashboard/ActivityHeatmap';
 import AssetAllocationNested from '@/components/dashboard/AssetAllocationNested';
 import AIAgentModal from '@/components/dashboard/AIAgentModal';
 import TaskCenter from '@/components/dashboard/TaskCenter';
+import Image from 'next/image';
 
 // Fetcher with Caching Logic
 const fetcher = async (url) => {
@@ -413,7 +414,7 @@ export default function AIDashboard() {
         animate={{ scale: 1 }}
         whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(139,92,246,0.5)" }}
         whileTap={{ scale: 0.95 }}
-        className="fixed bottom-8 right-8 z-40 group rounded-full"
+        className="fixed sm:bottom-8 bottom-4 sm:right-8 right-4 z-40 group rounded-full"
       >
         {/* Holographic Ripple */}
         <div className="absolute inset-0 bg-[#8B5CF6] rounded-full blur-xl opacity-20 group-hover:opacity-60 animate-pulse"></div>
@@ -424,7 +425,7 @@ export default function AIDashboard() {
            <div className="absolute inset-0 bg-gradient-to-tr from-[#7C3AED]/20 to-transparent opacity-50"></div>
            
            {/* Icon Animation */}
-           <FiCpu className="w-7 h-7 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" />
+           <Image src='/agent.png' alt='agent logo' height={55} width={55}/>
         </div>
 
         {/* Hover Label */}
