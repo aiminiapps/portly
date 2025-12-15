@@ -413,7 +413,7 @@ export default function AIDashboard() {
         animate={{ scale: 1 }}
         whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(139,92,246,0.5)" }}
         whileTap={{ scale: 0.95 }}
-        className="fixed bottom-8 right-8 z-50 group"
+        className="fixed bottom-8 right-8 z-40 group rounded-full"
       >
         {/* Holographic Ripple */}
         <div className="absolute inset-0 bg-[#8B5CF6] rounded-full blur-xl opacity-20 group-hover:opacity-60 animate-pulse"></div>
@@ -425,11 +425,6 @@ export default function AIDashboard() {
            
            {/* Icon Animation */}
            <FiCpu className="w-7 h-7 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" />
-           
-           {/* Status Indicator */}
-           <div className="absolute top-3 right-3 w-2.5 h-2.5 bg-[#0A0A0B] rounded-full flex items-center justify-center z-20">
-              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-           </div>
         </div>
 
         {/* Hover Label */}
