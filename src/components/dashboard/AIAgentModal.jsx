@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiX, FiSend, FiZap, FiCpu, FiActivity, FiArrowUpRight, FiLayers } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'motion/react';
+import { FiX, FiSend, FiZap, FiActivity, FiArrowUpRight, FiLayers } from 'react-icons/fi';
 import ReactMarkdown from 'react-markdown';
+import Image from 'next/image';
+
 
 export default function AIAgentModal({ isOpen, onClose, portfolioData, walletAddress }) {
   const [chatMessages, setChatMessages] = useState([
@@ -133,7 +135,7 @@ export default function AIAgentModal({ isOpen, onClose, portfolioData, walletAdd
               <div className="px-5 py-4 bg-[#1E1E24]/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between z-10">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#8B5CF6] flex items-center justify-center shadow-lg shadow-[#8B5CF6]/20 relative">
-                    <FiCpu className="text-white w-5 h-5 relative z-10" />
+                  <Image src='/agent.png' alt='agent logo' height={60} width={60}/>
                     <div className="absolute inset-0 bg-white/20 rounded-full animate-pulse"></div>
                   </div>
                   <div>
@@ -233,7 +235,7 @@ export default function AIAgentModal({ isOpen, onClose, portfolioData, walletAdd
                 </div>
                 <div className="mt-2.5 flex justify-center">
                   <p className="text-[9px] text-white/20 flex items-center gap-1.5 font-medium tracking-wide">
-                    <FiZap className="w-3 h-3" /> POWERED BY LLAMA-4 & ALCHEMY
+                    <FiZap className="w-3 h-3" /> POWERED BY PORTLY
                   </p>
                 </div>
               </div>
