@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiX, FiSend, FiZap, FiCpu } from 'react-icons/fi';
+import { FiX, FiSend, FiZap, FiCpu, FiActivity, FiArrowUpRight, FiLayers } from 'react-icons/fi';
 import ReactMarkdown from 'react-markdown';
 
 export default function AIAgentModal({ isOpen, onClose, portfolioData, walletAddress }) {
@@ -10,7 +10,7 @@ export default function AIAgentModal({ isOpen, onClose, portfolioData, walletAdd
     {
       id: 1,
       role: 'assistant',
-      content: `## Welcome to PORTLY.AI Assistant! 👋\n\nI've analyzed your portfolio:\n\n- **Total Assets**: ${portfolioData?.assets?.length || 0}\n- **Portfolio Value**: $${portfolioData?.totalValue?.toFixed(2) || 0}\n- **24h Change**: ${portfolioData?.changePercent?.toFixed(2) || 0}%\n\nHow can I help you optimize your crypto holdings today?`,
+      content: `**Welcome back.** 🚀\n\nI've analyzed your portfolio. You are currently tracking **${portfolioData?.assets?.length || 0} assets** with a total valuation of **$${portfolioData?.totalValue?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}**.\n\nHow can I assist you with your investment strategy today?`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -18,235 +18,226 @@ export default function AIAgentModal({ isOpen, onClose, portfolioData, walletAdd
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Auto-scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [chatMessages]);
+    if (isOpen) scrollToBottom();
+  }, [chatMessages, isOpen]);
 
+  // Main Send Function
   const sendChatMessage = async () => {
     if (!userInput.trim() || isTyping) return;
 
+    const currentInput = userInput;
+    setUserInput(''); // Clear input for better UX
+    
+    // Add user message immediately
     const userMessage = {
       id: Date.now(),
       role: 'user',
-      content: userInput,
+      content: currentInput,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
-
     setChatMessages(prev => [...prev, userMessage]);
-    const currentInput = userInput;
-    setUserInput('');
     setIsTyping(true);
 
     try {
+      // Construct a data-rich context prompt
+      const contextPrompt = `
+        CONTEXT: You are PORTLY.AI, an advanced crypto portfolio assistant.
+        USER DATA:
+        - Wallet: ${walletAddress || 'Connected'}
+        - Total Net Worth: $${portfolioData?.totalValue || 0}
+        - Asset Count: ${portfolioData?.assets?.length || 0}
+        - Top 3 Assets: ${portfolioData?.assets?.slice(0,3).map(a => `${a.symbol} ($${a.value.toFixed(0)})`).join(', ') || 'None'}
+        - Risk Score: ${portfolioData?.riskScore || 'N/A'}
+        
+        USER QUESTION: "${currentInput}"
+        
+        INSTRUCTIONS: Answer concisely in Markdown. Use bold for key figures. Be professional but conversational.
+      `;
+
       const response = await fetch('/api/agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: [
-            {
-              role: "system",
-              content: `You are an AI portfolio advisor for PORTLY.AI. Provide insights in markdown format.
-              
-Current portfolio:
-- Total Value: $${portfolioData?.totalValue?.toFixed(2) || 0}
-- Assets: ${portfolioData?.assets?.length || 0}
-- 24h Change: ${portfolioData?.changePercent?.toFixed(2) || 0}%
-- Risk Score: ${portfolioData?.riskScore?.toFixed(1) || 'N/A'}/10
-- Top Holdings: ${portfolioData?.assets?.slice(0, 3).map(a => `${a.symbol} ($${a.value.toFixed(2)})`).join(', ') || 'None'}
-
-Use markdown formatting with:
-- **Bold** for emphasis
-- ## Headers for sections
-- • Bullet points for lists
-- \`code\` for numbers/values
-
-Be concise, actionable, and data-driven.`
-            },
-            ...chatMessages.slice(-6).map(msg => ({
-              role: msg.role,
-              content: msg.content
-            })),
-            {
-              role: "user",
-              content: currentInput
-            }
+            { role: "system", content: "You are a helpful financial AI assistant." },
+            { role: "user", content: contextPrompt }
           ]
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-        const responseContent = data.reply || 'I apologize, but I encountered an issue. Please try again.';
-
-        const assistantMessage = {
+        const reply = data.reply || "I'm analyzing the blockchain data. Could you rephrase that?";
+        
+        setChatMessages(prev => [...prev, {
           id: Date.now() + 1,
           role: 'assistant',
-          content: responseContent,
+          content: reply,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-
-        setChatMessages(prev => [...prev, assistantMessage]);
+        }]);
+      } else {
+        throw new Error("API Failure");
       }
     } catch (error) {
-      console.error('Chat error:', error);
+      console.error(error);
+      // Smart Fallback using local data if API fails
+      setTimeout(() => {
+        setChatMessages(prev => [...prev, {
+          id: Date.now() + 1,
+          role: 'assistant',
+          content: `**Network Update:** I'm currently running in offline mode.\n\nBased on your local cache:\n* **Holdings:** ${portfolioData?.assets?.length} assets\n* **Top Asset:** ${portfolioData?.assets?.[0]?.symbol || 'N/A'}\n\nPlease check your connection for deeper market analysis.`,
+          timestamp: new Date().toLocaleTimeString()
+        }]);
+      }, 1500);
     } finally {
       setIsTyping(false);
     }
   };
 
-  const quickPrompts = [
-    { icon: FiZap, text: 'Analyze my risk exposure', prompt: 'Analyze my portfolio risk and suggest improvements' },
-    { icon: FiCpu, text: 'Top performers', prompt: 'Which assets are performing best and why?' },
-    { icon: FiZap, text: 'Diversification tips', prompt: 'How can I improve my portfolio diversification?' },
-    { icon: FiCpu, text: 'Rebalancing strategy', prompt: 'Should I rebalance my portfolio? Give me a strategy.' }
+  const suggestions = [
+    { icon: FiActivity, label: 'Risk Analysis', prompt: 'Analyze the risk level of my current holdings.' },
+    { icon: FiArrowUpRight, label: 'Top Movers', prompt: 'Which of my assets performed best in the last 24h?' },
+    { icon: FiLayers, label: 'Diversification', prompt: 'Is my portfolio well-diversified?' },
   ];
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Dark Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90]"
           />
 
-          {/* Modal */}
+          {/* Modal Window */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed inset-4 md:inset-auto md:right-6 md:top-20 md:bottom-6 md:w-[500px] z-50"
+            className="fixed inset-4 md:inset-auto md:right-8 md:bottom-24 md:w-[420px] md:h-[650px] z-[100] flex flex-col"
           >
-            <div className="glass-card h-full flex flex-col overflow-hidden shadow-2xl">
+            <div className="flex-1 flex flex-col bg-[#121214] border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden relative ring-1 ring-white/5">
+              
               {/* Header */}
-              <div className="p-6 border-b border-[#242437] bg-gradient-to-r from-[#7C3AED]/10 to-[#8B5CF6]/10">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#8B5CF6] flex items-center justify-center pulse-glow">
-                      <FiCpu className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-[#F9FAFB]">AI Portfolio Advisor</h2>
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse"></div>
-                        <span className="text-xs text-[#9CA3AF]">Powered by Llama 4</span>
-                      </div>
+              <div className="px-5 py-4 bg-[#1E1E24]/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between z-10">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#8B5CF6] flex items-center justify-center shadow-lg shadow-[#8B5CF6]/20 relative">
+                    <FiCpu className="text-white w-5 h-5 relative z-10" />
+                    <div className="absolute inset-0 bg-white/20 rounded-full animate-pulse"></div>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white text-sm tracking-wide">PORTLY AI</h3>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10B981]"></span>
+                      <span className="text-[10px] text-white/50 uppercase tracking-wider font-medium">Online</span>
                     </div>
                   </div>
-                  <button
-                    onClick={onClose}
-                    className="p-2 rounded-lg hover:bg-[#1E1F26] transition-colors"
-                  >
-                    <FiX className="w-5 h-5" />
-                  </button>
                 </div>
+                <button 
+                  onClick={onClose}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/40 hover:text-white"
+                >
+                  <FiX className="w-5 h-5" />
+                </button>
               </div>
 
-              {/* Quick Prompts */}
-              <div className="p-4 border-b border-[#242437] bg-[#16171D]/50">
-                <div className="grid grid-cols-2 gap-2">
-                  {quickPrompts.map((prompt, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setUserInput(prompt.prompt)}
-                      className="flex items-center gap-2 p-3 rounded-lg bg-[#1E1F26]/50 border border-[#242437] hover:border-[#8B5CF6] transition-all text-left group"
-                    >
-                      <prompt.icon className="w-4 h-4 text-[#8B5CF6] group-hover:scale-110 transition-transform" />
-                      <span className="text-xs text-[#9CA3AF] group-hover:text-[#E5E7EB]">{prompt.text}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                {chatMessages.map((message) => (
+              {/* Chat Content */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                {chatMessages.map((msg) => (
                   <motion.div
-                    key={message.id}
+                    key={msg.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                        message.role === 'user'
-                          ? 'bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] text-white'
-                          : 'bg-[#1E1F26] text-[#E5E7EB] border border-[#242437]'
-                      }`}
-                    >
-                      {message.role === 'assistant' ? (
-                        <ReactMarkdown
-                        //   className="prose prose-invert prose-sm max-w-none"
-                          components={{
-                            h2: ({node, ...props}) => <h2 className="text-lg font-bold text-[#8B5CF6] mt-3 mb-2" {...props} />,
-                            strong: ({node, ...props}) => <strong className="text-[#A78BFA] font-semibold" {...props} />,
-                            code: ({node, ...props}) => <code className="bg-[#0F0F14] px-1.5 py-0.5 rounded text-[#8B5CF6]" {...props} />,
-                            ul: ({node, ...props}) => <ul className="space-y-1 my-2" {...props} />,
-                            li: ({node, ...props}) => <li className="text-sm" {...props} />
-                          }}
-                        >
-                          {message.content}
-                        </ReactMarkdown>
-                      ) : (
-                        <p className="text-sm leading-relaxed">{message.content}</p>
-                      )}
-                      <p className="text-xs opacity-60 mt-2">{message.timestamp}</p>
+                    <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
+                      msg.role === 'user' 
+                        ? 'bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] text-white rounded-tr-sm shadow-md shadow-[#8B5CF6]/10' 
+                        : 'bg-[#1E1E24] text-gray-200 border border-white/5 rounded-tl-sm'
+                    }`}>
+                      <ReactMarkdown components={{
+                        strong: ({node, ...props}) => <span className="font-bold text-white" {...props} />,
+                        ul: ({node, ...props}) => <ul className="list-disc pl-4 mt-2 space-y-1 text-white/80" {...props} />,
+                        li: ({node, ...props}) => <li className="pl-1" {...props} />,
+                        p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />
+                      }}>
+                        {msg.content}
+                      </ReactMarkdown>
+                      <p className={`text-[9px] mt-1.5 text-right opacity-60 font-mono tracking-tight ${msg.role === 'user' ? 'text-white' : 'text-gray-400'}`}>
+                        {msg.timestamp}
+                      </p>
                     </div>
                   </motion.div>
                 ))}
-
+                
                 {isTyping && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex justify-start"
-                  >
-                    <div className="bg-[#1E1F26] border border-[#242437] rounded-2xl px-4 py-3">
-                      <div className="flex gap-1.5">
-                        {[0, 1, 2].map((i) => (
-                          <div
-                            key={i}
-                            className="w-2 h-2 bg-[#8B5CF6] rounded-full animate-bounce"
-                            style={{ animationDelay: `${i * 150}ms` }}
-                          />
-                        ))}
-                      </div>
+                  <div className="flex justify-start">
+                    <div className="bg-[#1E1E24] border border-white/5 rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1.5 items-center shadow-sm">
+                      <span className="w-1.5 h-1.5 bg-[#8B5CF6] rounded-full animate-bounce"></span>
+                      <span className="w-1.5 h-1.5 bg-[#8B5CF6] rounded-full animate-bounce delay-100"></span>
+                      <span className="w-1.5 h-1.5 bg-[#8B5CF6] rounded-full animate-bounce delay-200"></span>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
-
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Input */}
-              <div className="p-4 border-t border-[#242437] bg-[#16171D]/50">
-                <div className="flex gap-2">
+              {/* Suggestions Chips */}
+              {chatMessages.length < 3 && !userInput && (
+                <div className="px-5 pb-2">
+                  <p className="text-[9px] text-white/30 uppercase tracking-widest mb-2 ml-1">Suggested Actions</p>
+                  <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+                    {suggestions.map((s, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setUserInput(s.prompt)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.08] hover:border-[#8B5CF6]/30 transition-all whitespace-nowrap group active:scale-95"
+                      >
+                        <s.icon className="text-[#8B5CF6] w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                        <span className="text-xs text-white/70 font-medium">{s.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Input Area */}
+              <div className="p-4 bg-[#1E1E24] border-t border-white/5 relative z-20">
+                <div className="relative flex items-center gap-2">
                   <input
                     type="text"
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
-                    placeholder="Ask about your portfolio..."
-                    className="flex-1 px-4 py-3 bg-[#1E1F26] border border-[#242437] rounded-xl text-sm text-[#E5E7EB] placeholder-[#6B7280] focus:outline-none focus:border-[#8B5CF6] transition-colors"
+                    placeholder="Ask about crypto, trends, or risks..."
+                    className="w-full bg-[#0A0A0B] text-white text-sm rounded-xl pl-4 pr-12 py-3.5 border border-white/10 focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] outline-none transition-all placeholder:text-white/20 shadow-inner"
                   />
                   <button
                     onClick={sendChatMessage}
                     disabled={!userInput.trim() || isTyping}
-                    className="btn-3d p-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="absolute right-2 p-2 bg-[#8B5CF6] hover:bg-[#7C3AED] text-white rounded-lg disabled:opacity-50 disabled:bg-white/10 disabled:text-white/20 transition-all shadow-lg shadow-[#8B5CF6]/20 active:scale-95"
                   >
-                    <FiSend className="w-5 h-5" />
+                    <FiSend className="w-4 h-4" />
                   </button>
                 </div>
+                <div className="mt-2.5 flex justify-center">
+                  <p className="text-[9px] text-white/20 flex items-center gap-1.5 font-medium tracking-wide">
+                    <FiZap className="w-3 h-3" /> POWERED BY LLAMA-4 & ALCHEMY
+                  </p>
+                </div>
               </div>
+
             </div>
           </motion.div>
         </>
