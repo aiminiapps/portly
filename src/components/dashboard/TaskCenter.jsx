@@ -3,15 +3,12 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaWallet, FaSpinner, FaCheckCircle,
-  FaExternalLinkAlt, FaRetweet, FaComment, FaThumbsUp, FaCopy, 
-  FaInfoCircle, FaGift, FaCoins,  FaChartLine, 
-  FaTrophy, FaFire,  FaShare, FaUsers, 
-  FaMobileAlt, FaCheckDouble, FaEye
+  FaExternalLinkAlt, FaRetweet, FaThumbsUp, FaCopy, 
+  FaInfoCircle, FaGift, FaCoins,  FaChartLine,  FaFire,  FaShare, FaCheckDouble
 } from 'react-icons/fa';
 import { RiTwitterXLine, RiTelegram2Line } from "react-icons/ri";
-import { TbTarget } from 'react-icons/tb';
-import { BiCoin, BiData, BiShield } from 'react-icons/bi';
-import { FiCpu, FiZap, FiLayers } from 'react-icons/fi'; // New Premium Icons
+import { BiCoin } from 'react-icons/bi';
+import { FiCpu, FiLayers } from 'react-icons/fi';
 
 // Storage Configuration
 const STORAGE_KEY = 'portly-task-center';
