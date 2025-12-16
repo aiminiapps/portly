@@ -21,6 +21,7 @@
     "d3-array": "^3.2.4",
     "echarts": "^6.0.0",
     "echarts-for-react": "^3.0.5",
+    "ethers": "^6.16.0",
     "framer-motion": "^12.23.26",
     "motion": "^12.23.26",
     "next": "16.0.10",
