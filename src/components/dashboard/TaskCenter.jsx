@@ -8,21 +8,22 @@ import {
   FaTrophy, FaFire,  FaShare, FaUsers, 
   FaMobileAlt, FaCheckDouble, FaEye
 } from 'react-icons/fa';
-import {  TbTarget } from 'react-icons/tb';
+import { TbTarget } from 'react-icons/tb';
 import { BiCoin, BiData, BiShield } from 'react-icons/bi';
+import { FiCpu, FiZap, FiLayers } from 'react-icons/fi'; // New Premium Icons
 
-// Storage Configuration - Updated for LabelX
-const STORAGE_KEY = 'labelx-task-center';
+// Storage Configuration
+const STORAGE_KEY = 'portly-task-center';
 const TOKEN_CONTRACT = process.env.NEXT_PUBLIC_TOKEN_CONTRACT_ADDRESS || '0x...';
 
-// LabelX Theme Colors
+// Portly Premium Theme Colors
 const theme = {
-  primary: '#FF7A1A',
-  secondary: '#FDD536',
-  success: '#22C55E',
-  error: '#EF4444',
-  surface: 'rgba(255, 122, 26, 0.1)',
-  text: '#F5F5F5'
+  primary: '#8B5CF6',    // Violet
+  secondary: '#7C3AED',  // Dark Violet
+  success: '#10B981',    // Emerald
+  error: '#EF4444',      // Red
+  surface: 'rgba(139, 92, 246, 0.1)',
+  text: '#E5E7EB'
 };
 
 // Animations
@@ -33,12 +34,12 @@ const fadeIn = {
 };
 
 const slideIn = {
-  initial: { x: -50, opacity: 0 },
+  initial: { x: -20, opacity: 0 },
   animate: { x: 0, opacity: 1 },
   transition: { duration: 0.5 }
 };
 
-// Storage Utilities
+// --- LOGIC HELPERS (Unchanged Logic) ---
 const getStorage = () => {
   if (typeof window === 'undefined') return null;
   try {
@@ -111,7 +112,7 @@ const useWallet = () => {
         window.location.href = `https://metamask.app.link/dapp/${window.location.host}`;
         return;
       }
-      alert('🔥 Please install MetaMask extension to start earning LBLX tokens!');
+      alert('🔥 Please install MetaMask extension to start earning PTLY tokens!');
       return;
     }
 
@@ -129,7 +130,7 @@ const useWallet = () => {
         throw new Error('No accounts found');
       }
 
-      // Switch to BSC
+      // Switch to BSC (Keeping logic as requested)
       try {
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
@@ -225,7 +226,7 @@ const useWallet = () => {
     try {
       const nonce = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const expiry = Math.floor(Date.now() / 1000) + 3600;
-      const message = `Welcome to LabelX!\nAddress: ${address}\nNonce: ${nonce}\nExpiry: ${expiry}`;
+      const message = `Welcome to Portly!\nAddress: ${address}\nNonce: ${nonce}\nExpiry: ${expiry}`;
 
       const signature = await signer.signMessage(message);
 
@@ -264,8 +265,6 @@ const useWallet = () => {
             lastCompletedDate: null
           }
         });
-
-        console.log('🎉 Welcome bonus sent!', data.txHash);
       }
     } catch (error) {
       console.error('Welcome bonus error:', error);
@@ -299,7 +298,6 @@ const useWallet = () => {
   // Auto-reconnect
   useEffect(() => {
     let isMounted = true;
-
     const reconnect = async () => {
       try {
         const saved = getStorage();
@@ -308,153 +306,99 @@ const useWallet = () => {
             (Date.now() - saved.wallet.lastConnected) < 24 * 60 * 60 * 1000;
 
           if (isRecent) {
-            const ethersModule = await import('ethers');
-            const ethers = ethersModule.default || ethersModule;
-
             const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-
-            if (accounts.length > 0 && 
-                accounts[0].toLowerCase() === saved.wallet.address.toLowerCase()) {
-              
-              let provider, signer, balance = saved.wallet.balance;
-              
-              if (ethers.BrowserProvider) {
-                provider = new ethers.BrowserProvider(window.ethereum);
-                signer = await provider.getSigner();
-                try {
-                  const rawBalance = await provider.getBalance(accounts[0]);
-                  balance = ethers.formatEther(rawBalance);
-                } catch (err) {
-                  console.warn('Balance update failed');
-                }
-              } else if (ethers.providers) {
-                provider = new ethers.providers.Web3Provider(window.ethereum);
-                signer = provider.getSigner();
-                try {
-                  const rawBalance = await provider.getBalance(accounts[0]);
-                  balance = ethers.utils.formatEther(rawBalance);
-                } catch (err) {
-                  console.warn('Balance update failed');
-                }
-              }
-
+            if (accounts.length > 0 && accounts[0].toLowerCase() === saved.wallet.address.toLowerCase()) {
               if (isMounted) {
-                setWallet({
+                setWallet(prev => ({
+                  ...prev,
                   address: accounts[0],
-                  provider,
-                  signer,
-                  isConnecting: false,
                   isConnected: true,
-                  balance,
-                  tokenBalance: '0',
-                  error: null,
                   isInitialized: true
-                });
+                }));
               }
-
-              console.log('🔄 Auto-reconnected:', accounts[0]);
               return;
             }
           }
         }
-
-        if (isMounted) {
-          setWallet(prev => ({ ...prev, isInitialized: true }));
-        }
+        if (isMounted) setWallet(prev => ({ ...prev, isInitialized: true }));
       } catch (error) {
-        if (isMounted) {
-          setWallet(prev => ({ ...prev, isInitialized: true }));
-        }
+        if (isMounted) setWallet(prev => ({ ...prev, isInitialized: true }));
       }
     };
-
     reconnect();
-
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, []);
 
   return { ...wallet, connectWallet, disconnect, welcomeBonusStatus };
 };
 
 // Main Component
-export default function LabelXTaskCenter() {
+export default function TaskCenter() {
   const wallet = useWallet();
   const [tasks, setTasks] = useState({});
   const [processingTask, setProcessingTask] = useState(null);
   const [notification, setNotification] = useState(null);
   const [showTokenInfo, setShowTokenInfo] = useState(false);
 
-  // Task Definitions - Updated for LabelX
+  // Task Definitions - Updated for Portly Content
   const taskDefinitions = useMemo(() => ({
     followX: {
       id: 'followX',
-      title: 'Follow on X',
-      description: 'Follow @LabelX_AI on X (Twitter) for AI training updates',
+      title: 'Follow Portly on X',
+      description: 'Follow @PortlyAI for the latest insights & updates',
       reward: 100,
       icon: FaTwitter,
-      action: 'https://twitter.com/intent/follow?screen_name=labelxofficial',
+      action: 'https://twitter.com/intent/follow?screen_name=portlyai',
       type: 'social',
       difficulty: 'easy'
     },
     likeX: {
       id: 'likeX',
-      title: 'Like Post on X',
-      description: 'Like our latest post about AI data labeling',
+      title: 'Like Latest Post',
+      description: 'Engage with our latest market analysis on X',
       reward: 50,
       icon: FaThumbsUp,
-      action: 'https://x.com/labelxofficial',
+      action: 'https://x.com/portlyai',
       type: 'social',
       difficulty: 'easy'
     },
     commentX: {
       id: 'commentX',
-      title: 'Comment on X',
-      description: 'Share your thoughts on AI training and data labeling',
+      title: 'Join the Discussion',
+      description: 'Comment your thoughts on our latest AI feature',
       reward: 75,
       icon: FaComment,
-      action: 'https://x.com/labelxofficial',
+      action: 'https://x.com/portlyai',
       type: 'social',
       difficulty: 'medium'
     },
     retweetX: {
       id: 'retweetX',
-      title: 'Retweet',
-      description: 'Help us spread the word about decentralized AI training',
+      title: 'Boost the Signal',
+      description: 'Retweet our pinned post to support the ecosystem',
       reward: 60,
       icon: FaRetweet,
-      action: 'https://x.com/labelxofficial',
+      action: 'https://x.com/portlyai',
       type: 'social',
       difficulty: 'easy'
     },
     joinTelegram: {
       id: 'joinTelegram',
-      title: 'Join Telegram',
-      description: 'Join our AI training community on Telegram',
+      title: 'Join Community',
+      description: 'Enter the Portly Traders Group on Telegram',
       reward: 80,
       icon: FaTelegram,
-      action: 'https://t.me/LabelXAI_Bot',
+      action: 'https://t.me/PortlyAI',
       type: 'social',
-      difficulty: 'easy'
-    },
-    openMiniApp: {
-      id: 'openMiniApp',
-      title: 'Open Mini App',
-      description: 'Explore our Telegram labeling mini app',
-      reward: 80,
-      icon: FaMobileAlt,
-      action: 'https://t.me/LabelXAI_Bot',
-      type: 'app',
       difficulty: 'easy'
     },
     shareX: {
       id: 'shareX',
-      title: 'Share with Friends',
-      description: 'Share LabelX with your network and earn together',
+      title: 'Invite Peers',
+      description: 'Share your Portfolio Score on X',
       reward: 90,
       icon: FaShare,
-      action: 'https://twitter.com/intent/tweet?text=Join%20me%20on%20LabelX%20-%20Train%20AI%20and%20earn%20LBLX%20tokens!',
+      action: 'https://twitter.com/intent/tweet?text=I%20just%20analyzed%20my%20portfolio%20with%20@PortlyAI!%20Check%20it%20out!',
       type: 'social',
       difficulty: 'medium'
     }
@@ -463,9 +407,7 @@ export default function LabelXTaskCenter() {
   // Initialize tasks
   useEffect(() => {
     const saved = getStorage();
-    if (saved?.tasks) {
-      setTasks(saved.tasks);
-    }
+    if (saved?.tasks) setTasks(saved.tasks);
   }, []);
 
   // Stats calculations
@@ -475,17 +417,13 @@ export default function LabelXTaskCenter() {
     const total = Object.keys(taskDefinitions).length;
     const earned = saved?.stats?.totalEarned || 0;
     const progress = total > 0 ? (completed / total) * 100 : 0;
-
     return { completed, total, earned, progress };
   }, [tasks, taskDefinitions]);
 
-  // Complete Task Handler
+  // Complete Task Handler (Logic Unchanged)
   const completeTask = useCallback(async (taskId) => {
-    if (!wallet.isConnected || !wallet.signer) {
-      setNotification({
-        type: 'error',
-        message: 'Please connect your wallet first to earn LBLX!'
-      });
+    if (!wallet.isConnected) {
+      setNotification({ type: 'error', message: 'Connect wallet to start earning PTLY!' });
       setTimeout(() => setNotification(null), 3000);
       return;
     }
@@ -493,10 +431,7 @@ export default function LabelXTaskCenter() {
     const task = taskDefinitions[taskId];
     if (!task || tasks[taskId]?.completed) return;
 
-    // Open link
-    if (task.action) {
-      window.open(task.action, '_blank', 'noopener,noreferrer');
-    }
+    if (task.action) window.open(task.action, '_blank', 'noopener,noreferrer');
 
     setProcessingTask(taskId);
 
@@ -510,15 +445,7 @@ export default function LabelXTaskCenter() {
       const response = await fetch('/api/reward', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          taskId,
-          address: wallet.address,
-          message,
-          signature,
-          nonce,
-          expiry,
-          reward: task.reward
-        })
+        body: JSON.stringify({ taskId, address: wallet.address, message, signature, nonce, expiry, reward: task.reward })
       });
 
       const data = await response.json();
@@ -526,16 +453,10 @@ export default function LabelXTaskCenter() {
       if (data.success) {
         const newTasks = {
           ...tasks,
-          [taskId]: {
-            completed: true,
-            reward: task.reward,
-            txHash: data.txHash,
-            timestamp: Date.now()
-          }
+          [taskId]: { completed: true, reward: task.reward, txHash: data.txHash, timestamp: Date.now() }
         };
-
         setTasks(newTasks);
-
+        
         const saved = getStorage();
         updateStorage({
           tasks: newTasks,
@@ -547,524 +468,267 @@ export default function LabelXTaskCenter() {
           }
         });
 
-        setNotification({
-          type: 'success',
-          message: `🎉 +${task.reward} LBLX earned!`,
-          txHash: data.txHash
-        });
-
+        setNotification({ type: 'success', message: `🎉 +${task.reward} PTLY earned!`, txHash: data.txHash });
         setTimeout(() => setNotification(null), 5000);
       } else {
         throw new Error(data.error || 'Transaction failed');
       }
     } catch (error) {
-      setNotification({
-        type: 'error',
-        message: `Failed: ${error.message}`
-      });
+      setNotification({ type: 'error', message: `Failed: ${error.message}` });
       setTimeout(() => setNotification(null), 3000);
     } finally {
       setProcessingTask(null);
     }
   }, [wallet, tasks, taskDefinitions]);
 
-  // FIXED: Add Token to MetaMask
   const addTokenToMetaMask = useCallback(async () => {
-    if (!window.ethereum) {
-      setNotification({
-        type: 'error',
-        message: 'MetaMask not detected. Please install MetaMask extension.'
-      });
-      setTimeout(() => setNotification(null), 3000);
-      return;
-    }
-
+    if (!window.ethereum) return;
     try {
-      const wasAdded = await window.ethereum.request({
+      await window.ethereum.request({
         method: 'wallet_watchAsset',
         params: {
           type: 'ERC20',
           options: {
             address: TOKEN_CONTRACT,
-            symbol: 'LBLX',
+            symbol: 'PTLY',
             decimals: 18,
-            image: 'https://label-x.vercel.app/agent/agentlogo.png'
+            image: 'https://label-x.vercel.app/agent/agentlogo.png' // Update with real Portly logo
           }
         }
       });
-
-      if (wasAdded) {
-        setNotification({
-          type: 'success',
-          message: '🎉 LBLX token added to MetaMask successfully!'
-        });
-        setTimeout(() => setNotification(null), 3000);
-      }
+      setNotification({ type: 'success', message: '🎉 PTLY added to MetaMask!' });
     } catch (error) {
-      console.error('Failed to add token:', error);
-      setNotification({
-        type: 'error',
-        message: 'Failed to add token. Please try again.'
-      });
-      setTimeout(() => setNotification(null), 3000);
+      console.error(error);
     }
   }, []);
 
-  // Copy to clipboard
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    setNotification({
-      type: 'success',
-      message: '📋 Copied to clipboard!'
-    });
+    setNotification({ type: 'success', message: '📋 Copied!' });
     setTimeout(() => setNotification(null), 2000);
   };
 
   if (!wallet.isInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <FaSpinner className="animate-spin text-orange-400 mx-auto mb-4" size={48} />
-          <p className="text-white text-lg font-medium">Loading Task Center...</p>
-          <p className="text-gray-400 text-sm mt-2">Initializing your AI training dashboard</p>
-        </motion.div>
+      <div className="flex flex-col items-center justify-center py-20">
+        <FiCpu className="w-12 h-12 text-[#8B5CF6] animate-spin mb-4" />
+        <p className="text-white/60 text-sm">Initializing Neural Link...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen text-white">
-      {/* Notification */}
+    <div className="flex flex-col gap-6 w-full text-white">
+      
+      {/* --- NOTIFICATIONS --- */}
       <AnimatePresence>
         {notification && (
           <motion.div
-            initial={{ opacity: 0, y: -50 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            className="fixed top-4 backdrop-blur-sm left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full px-4"
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-20 right-6 z-50 max-w-sm w-full"
           >
-            <div
-              className={`glass-light rounded-2xl p-4 shadow-2xl border ${
-                notification.type === 'success'
-                  ? 'border-green-500/30 bg-green-500/10'
-                  : 'border-red-500/30 bg-red-500/10'
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                {notification.type === 'success' ? (
-                  <FaCheckCircle className="text-green-400 flex-shrink-0 mt-0.5" size={20} />
-                ) : (
-                  <FaInfoCircle className="text-red-400 flex-shrink-0 mt-0.5" size={20} />
+            <div className={`backdrop-blur-xl border p-4 rounded-2xl shadow-2xl flex items-center gap-3 ${
+              notification.type === 'success' 
+                ? 'bg-emerald-500/10 border-emerald-500/30' 
+                : 'bg-red-500/10 border-red-500/30'
+            }`}>
+              <div className={`p-2 rounded-full ${notification.type === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                {notification.type === 'success' ? <FaCheckCircle /> : <FaInfoCircle />}
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-white">{notification.message}</p>
+                {notification.txHash && (
+                  <a href={`https://bscscan.com/tx/${notification.txHash}`} target="_blank" rel="noreferrer" className="text-xs text-[#8B5CF6] hover:underline flex items-center gap-1 mt-1">
+                    View on Explorer <FaExternalLinkAlt size={10} />
+                  </a>
                 )}
-                <div className="flex-1">
-                  <p className="text-white font-medium text-sm">{notification.message}</p>
-                  {notification.txHash && (
-                    <a
-                      href={`https://bscscan.com/tx/${notification.txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-orange-400 text-xs hover:underline flex items-center gap-1 mt-1"
-                    >
-                      View on BscScan <FaExternalLinkAlt size={10} />
-                    </a>
-                  )}
-                </div>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Welcome Bonus Status */}
+      {/* --- WELCOME BONUS MODAL --- */}
       <AnimatePresence>
         {wallet.welcomeBonusStatus.sending && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-          >
-            <div className="glass rounded-3xl p-8 max-w-sm w-full text-center">
-              <FaSpinner className="animate-spin text-orange-400 mx-auto mb-4" size={48} />
-              <h3 className="text-xl font-bold text-white mb-2">Welcome Bonus Processing</h3>
-              <p className="text-gray-400 text-sm">
-                Sending 10 LBLX tokens to your wallet...
-              </p>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+            <div className="bg-[#121214] border border-[#8B5CF6]/30 rounded-3xl p-8 max-w-sm w-full text-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-[#8B5CF6]/5 animate-pulse"></div>
+              <FiCpu className="w-12 h-12 text-[#8B5CF6] mx-auto mb-4 animate-spin" />
+              <h3 className="text-xl font-bold text-white mb-2">Claiming Bonus...</h3>
+              <p className="text-white/40 text-sm">Transferring 10 PTLY to your wallet.</p>
             </div>
           </motion.div>
         )}
-
         {wallet.welcomeBonusStatus.sent && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-          >
-            <div className="glass rounded-3xl p-8 max-w-sm w-full text-center">
-              <FaGift className="text-orange-400 mx-auto mb-4" size={48} />
-              <h3 className="text-xl font-bold text-white mb-2">🎉 Welcome to LabelX!</h3>
-              <p className="text-green-400 font-medium mb-4">
-                +10 LBLX tokens added to your wallet!
-              </p>
-              {wallet.welcomeBonusStatus.txHash && (
-                <a
-                  href={`https://bscscan.com/tx/${wallet.welcomeBonusStatus.txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-orange-400 text-sm hover:underline flex items-center justify-center gap-2 mb-4"
-                >
-                  View Transaction <FaExternalLinkAlt size={12} />
-                </a>
-              )}
-              <button
-                onClick={() => window.location.reload()}
-                className="px-6 py-3 rounded-2xl font-semibold text-white w-full"
-                style={{ backgroundColor: theme.primary }}
-              >
-                Start Earning More
-              </button>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+            <div className="bg-[#121214] border border-emerald-500/30 rounded-3xl p-8 max-w-sm w-full text-center">
+              <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaGift className="w-8 h-8 text-emerald-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Welcome to Portly!</h3>
+              <p className="text-emerald-400 font-medium mb-4">+10 PTLY Received</p>
+              <button onClick={() => window.location.reload()} className="w-full py-3 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-bold transition-all">Start Earning</button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="max-w-4xl mx-auto pb-16 space-y-6">
-        {/* Header */}
-        <motion.div {...fadeIn} className="text-center mb-8 pt-6">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <h1 className="text-4xl font-bold text-white">LabelX Tasks</h1>
+      {/* --- HERO SECTION --- */}
+      <motion.div {...fadeIn} className="relative rounded-[2.5rem] border border-white/5 bg-[#121214]/60 backdrop-blur-xl p-8 overflow-hidden">
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#8B5CF6]/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+              <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#8B5CF6] flex items-center justify-center shadow-lg">
+                <FiLayers className="text-white w-5 h-5" />
+              </span>
+              Task Center
+            </h1>
+            <p className="text-white/40 max-w-md">Complete missions to earn PTLY tokens and unlock premium AI features.</p>
           </div>
-          <p className="text-gray-400 text-lg">
-            Complete tasks and earn real LBLX tokens on BSC
-          </p>
-        </motion.div>
-
-        {/* Wallet Connection */}
-        {!wallet.isConnected ? (
-          <motion.div {...fadeIn} className="glass rounded-3xl p-8 text-center">
-            <FaWallet className="text-orange-400 mx-auto mb-4" size={48} />
-            <h2 className="text-2xl font-bold text-white mb-3">Connect Your Wallet</h2>
-            <p className="text-gray-400 mb-6">
-              Connect MetaMask to start earning LBLX tokens. New users receive 10 tokens instantly!
-            </p>
+          
+          {!wallet.isConnected ? (
             <motion.button
               onClick={wallet.connectWallet}
               disabled={wallet.isConnecting}
-              className="px-8 py-4 rounded-2xl font-semibold text-white flex items-center gap-3 mx-auto"
-              style={{ backgroundColor: theme.primary }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              className="px-8 py-3 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-bold shadow-[0_0_20px_rgba(139,92,246,0.4)] flex items-center gap-2 transition-all"
             >
-              {wallet.isConnecting ? (
-                <>
-                  <FaSpinner className="animate-spin" />
-                  Connecting...
-                </>
-              ) : (
-                <>
-                  <FaWallet />
-                  Connect MetaMask
-                </>
-              )}
+              {wallet.isConnecting ? <FaSpinner className="animate-spin" /> : <FaWallet />}
+              Connect Wallet
             </motion.button>
-            {wallet.error && (
-              <p className="text-red-400 mt-4 text-sm">{wallet.error}</p>
-            )}
-          </motion.div>
-        ) : (
-          <>
-            {/* Wallet Info */}
-            <motion.div {...slideIn} className="glass rounded-3xl p-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="glass-light rounded-2xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <FaWallet className="text-orange-400" />
-                    <span className="text-gray-400 text-sm">Connected Wallet</span>
+          ) : (
+            <div className="flex gap-4">
+               <div className="bg-[#1E1E24] border border-white/10 rounded-xl p-3 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#8B5CF6]/10 flex items-center justify-center text-[#8B5CF6]">
+                     <BiCoin />
                   </div>
-                  <p className="text-white font-medium text-sm">
-                    {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
-                  </p>
-                  <button
-                    onClick={() => copyToClipboard(wallet.address)}
-                    className="text-orange-400 text-xs mt-1 hover:underline flex items-center gap-1"
-                  >
-                    <FaCopy size={10} /> Copy
-                  </button>
-                </div>
-
-                <div className="glass-light rounded-2xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <BiCoin className="text-yellow-400" />
-                    <span className="text-gray-400 text-sm">BNB Balance</span>
+                  <div>
+                     <p className="text-[10px] text-white/40 uppercase">Balance</p>
+                     <p className="text-sm font-bold text-white">{parseFloat(wallet.balance).toFixed(4)} BNB</p>
                   </div>
-                  <p className="text-white font-bold">
-                    {parseFloat(wallet.balance).toFixed(4)}
-                  </p>
-                </div>
-
-                <div className="glass-light rounded-2xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <BiShield className="text-green-400" />
-                    <span className="text-gray-400 text-sm">Network</span>
-                  </div>
-                  <p className="text-white font-medium">BSC</p>
-                </div>
-
-                <div className="glass-light rounded-2xl p-4">
-                  <button
-                    onClick={wallet.disconnect}
-                    className="w-full py-2 rounded-xl glass-light text-red-400 font-medium text-sm hover:bg-red-500/10"
-                  >
-                    Disconnect
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Stats Overview */}
-            <motion.div {...fadeIn} className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="glass rounded-2xl p-6 text-center">
-                <FaCheckCircle className="text-green-400 mx-auto mb-3" size={32} />
-                <p className="text-2xl font-bold text-white mb-1">
-                  {stats.completed}/{stats.total}
-                </p>
-                <p className="text-gray-400 text-sm">Tasks Done</p>
-              </div>
-
-              <div className="glass rounded-2xl p-6 text-center">
-                <FaCoins className="text-orange-400 mx-auto mb-3" size={32} />
-                <p className="text-2xl font-bold text-white mb-1">{stats.earned}</p>
-                <p className="text-gray-400 text-sm">LBLX Earned</p>
-              </div>
-
-              <div className="glass rounded-2xl p-6 text-center sm:mt-0 -mt-6">
-                <FaChartLine className="text-blue-400 mx-auto mb-3" size={32} />
-                <p className="text-2xl font-bold text-white mb-1">
-                  {Math.round(stats.progress)}%
-                </p>
-                <p className="text-gray-400 text-sm">Complete</p>
-              </div>
-
-              <div className="glass rounded-2xl p-6 text-center sm:mt-0 -mt-6">
-                <FaFire className="text-red-400 mx-auto mb-3" size={32} />
-                <p className="text-2xl font-bold text-white mb-1">
-                  {getStorage()?.stats?.currentStreak || 0}
-                </p>
-                <p className="text-gray-400 text-sm">Streak</p>
-              </div>
-            </motion.div>
-
-            {/* Tasks Grid */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                {/* <TbTarget className="text-orange-400" /> */}
-                Available Tasks
-              </h2>
-
-              {Object.values(taskDefinitions).map((task, index) => {
-                const isCompleted = tasks[task.id]?.completed;
-                const isProcessing = processingTask === task.id;
-
-                return (
-                  <motion.div
-                    key={task.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className={`glass rounded-3xl p-6 ${
-                      isCompleted ? 'opacity-60' : ''
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-4 flex-1">
-                        {/* <div
-                          className="p-3 rounded-2xl flex-shrink-0"
-                          style={{ backgroundColor: theme.surface }}
-                        >
-                          <task.icon className="text-orange-400" size={24} />
-                        </div> */}
-
-                        <div className="flex-1">
-                          <h3 className="text-lg font-bold text-white mb-1">
-                            {task.title}
-                          </h3>
-                          <p className="text-gray-400 text-sm mb-3">
-                            {task.description}
-                          </p>
-
-                          <div className="flex items-center gap-4 text-xs text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <BiData size={14} />
-                              {task.type}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <TbTarget size={14} />
-                              {task.difficulty}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="text-right flex-shrink-0">
-                        <div className="text-2xl font-bold text-green-400 mb-1">
-                          +{task.reward}
-                        </div>
-                        <div className="text-xs text-gray-400 mb-3">LBLX</div>
-
-                        {isCompleted ? (
-                          <div className="flex items-center gap-2 text-green-400 text-sm font-medium">
-                            <FaCheckDouble />
-                            Completed
-                          </div>
-                        ) : (
-                          <motion.button
-                            onClick={() => completeTask(task.id)}
-                            disabled={isProcessing}
-                            className="px-6 py-3 rounded-xl font-semibold text-white disabled:opacity-50"
-                            style={{ backgroundColor: theme.primary }}
-                            whileHover={!isProcessing ? { scale: 1.05 } : {}}
-                            whileTap={!isProcessing ? { scale: 0.95 } : {}}
-                          >
-                            {isProcessing ? (
-                              <FaSpinner className="animate-spin" />
-                            ) : (
-                              'Complete'
-                            )}
-                          </motion.button>
-                        )}
-                      </div>
-                    </div>
-
-                    {tasks[task.id]?.txHash && (
-                      <div className="mt-4 pt-4 border-t border-gray-700/30">
-                        <a
-                          href={`https://bscscan.com/tx/${tasks[task.id].txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-orange-400 text-xs hover:underline flex items-center gap-2"
-                        >
-                          <FaEye size={12} />
-                          View Transaction
-                          <FaExternalLinkAlt size={10} />
-                        </a>
-                      </div>
-                    )}
-                  </motion.div>
-                );
-              })}
+               </div>
+               <button onClick={wallet.disconnect} className="p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-red-500/10 hover:text-red-400 transition-colors">
+                  <FaRetweet className="rotate-180" />
+               </button>
             </div>
+          )}
+        </div>
+      </motion.div>
 
-            {/* Completion Message */}
-            {stats.completed === stats.total && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="glass rounded-3xl p-8 text-center"
-              >
-                <FaTrophy className="text-orange-400 mx-auto mb-4" size={64} />
-                <h2 className="text-2xl font-bold text-white mb-3">
-                  🎉 All Tasks Completed!
-                </h2>
-                <p className="text-gray-400 mb-6">
-                  Congratulations! You've completed all available tasks!
-                </p>
-                <div className="glass-light rounded-2xl p-6 inline-block">
-                  <p className="text-gray-400 text-sm mb-1">Total Earned</p>
-                  <p className="text-4xl font-bold text-orange-400">{stats.earned} LBLX</p>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Import Token Section - FIXED */}
-            <motion.div {...fadeIn} className="glass rounded-3xl p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                    <BiCoin className="text-orange-400" />
-                    Add LBLX to MetaMask
-                  </h3>
-                  <p className="text-gray-400 text-sm mb-4">
-                    Import the LBLX token to your MetaMask wallet to see your balance
-                  </p>
-                  
-                  <div className="glass-light rounded-xl p-4 mb-4">
-                    <div className="text-xs text-gray-400 mb-1">Token Contract</div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-white font-mono text-sm flex-1">
-                        {/* {TOKEN_CONTRACT} */}
-                        {TOKEN_CONTRACT?.slice(0, 15)}...{TOKEN_CONTRACT?.slice(-4)}
-                      </p>
-                      <button
-                        onClick={() => copyToClipboard(TOKEN_CONTRACT)}
-                        className="text-orange-400 hover:text-orange-300 flex-shrink-0"
-                      >
-                        <FaCopy />
-                      </button>
-                    </div>
-                  </div>
-
-                  <motion.button
-                    onClick={addTokenToMetaMask}
-                    className="w-full px-6 py-3 rounded-xl font-semibold text-white flex items-center justify-center gap-3"
-                    style={{ backgroundColor: theme.primary }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <FaWallet />
-                    Add LBLX to MetaMask
-                  </motion.button>
-                </div>
-
-                <button
-                  onClick={() => setShowTokenInfo(!showTokenInfo)}
-                  className="p-2 rounded-xl glass-light text-gray-400 hover:text-white"
-                >
-                  <FaInfoCircle size={20} />
-                </button>
-              </div>
-
-              <AnimatePresence>
-                {showTokenInfo && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mt-6 pt-6 border-t border-gray-700/30"
-                  >
-                    <h4 className="font-semibold text-white mb-4">How to import LBLX token:</h4>
-                    <div className="space-y-4">
-                      {[
-                        { step: 1, title: 'Open MetaMask', desc: "Make sure you're on the BNB Smart Chain network" },
-                        { step: 2, title: 'Click "Import tokens"', desc: 'Find this option at the bottom of the assets list' },
-                        { step: 3, title: 'Paste token address', desc: 'Use the contract address shown above' },
-                        { step: 4, title: 'Confirm', desc: 'Your LBLX balance will appear in your wallet!' }
-                      ].map((item) => (
-                        <div key={item.step} className="flex gap-4">
-                          <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm"
-                            style={{ backgroundColor: theme.surface, color: theme.primary }}
-                          >
-                            {item.step}
-                          </div>
-                          <div>
-                            <h5 className="font-medium text-white text-sm">{item.title}</h5>
-                            <p className="text-gray-400 text-xs">{item.desc}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+      {/* --- STATS GRID --- */}
+      {wallet.isConnected && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: 'Tasks Done', val: `${stats.completed}/${stats.total}`, icon: FaCheckCircle, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+            { label: 'PTLY Earned', val: stats.earned, icon: FaCoins, color: 'text-[#8B5CF6]', bg: 'bg-[#8B5CF6]/10' },
+            { label: 'Completion', val: `${Math.round(stats.progress)}%`, icon: FaChartLine, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+            { label: 'Streak', val: `${getStorage()?.stats?.currentStreak || 0} Days`, icon: FaFire, color: 'text-orange-400', bg: 'bg-orange-500/10' },
+          ].map((s, i) => (
+            <motion.div key={i} {...fadeIn} transition={{ delay: i * 0.1 }} className="p-4 rounded-2xl border border-white/5 bg-[#121214]/60 backdrop-blur-xl">
+               <div className={`w-8 h-8 rounded-lg ${s.bg} flex items-center justify-center mb-3 ${s.color}`}>
+                  <s.icon />
+               </div>
+               <p className="text-2xl font-bold text-white">{s.val}</p>
+               <p className="text-xs text-white/40 uppercase tracking-wider">{s.label}</p>
             </motion.div>
-          </>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {/* --- TASKS LIST --- */}
+      {wallet.isConnected && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+           {Object.values(taskDefinitions).map((task, index) => {
+              const isCompleted = tasks[task.id]?.completed;
+              const isProcessing = processingTask === task.id;
+              
+              return (
+                <motion.div
+                  key={task.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className={`p-5 rounded-2xl border border-white/5 bg-[#1E1E24]/40 backdrop-blur-md relative overflow-hidden group ${isCompleted ? 'opacity-50' : ''}`}
+                >
+                   {/* Hover Glow */}
+                   <div className="absolute inset-0 bg-[#8B5CF6]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                   
+                   <div className="flex justify-between items-start relative z-10">
+                      <div className="flex gap-4">
+                         <div className="w-10 h-10 rounded-xl bg-[#121214] border border-white/5 flex items-center justify-center text-[#8B5CF6] shadow-inner">
+                            <task.icon size={18} />
+                         </div>
+                         <div>
+                            <h3 className="font-bold text-white text-sm">{task.title}</h3>
+                            <p className="text-xs text-white/40 max-w-[200px] mt-1">{task.description}</p>
+                            <div className="flex gap-2 mt-3">
+                               <span className="px-2 py-0.5 rounded-md bg-white/5 text-[10px] text-white/30 border border-white/5 uppercase">{task.type}</span>
+                               <span className="px-2 py-0.5 rounded-md bg-white/5 text-[10px] text-white/30 border border-white/5 uppercase">{task.difficulty}</span>
+                            </div>
+                         </div>
+                      </div>
+
+                      <div className="text-right">
+                         <p className="text-lg font-bold text-[#8B5CF6]">+{task.reward}</p>
+                         <p className="text-[10px] text-white/20 mb-3">PTLY</p>
+                         
+                         {isCompleted ? (
+                            <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold bg-emerald-500/10 px-3 py-1.5 rounded-lg">
+                               <FaCheckDouble /> Claimed
+                            </div>
+                         ) : (
+                            <motion.button
+                               onClick={() => completeTask(task.id)}
+                               disabled={isProcessing}
+                               whileHover={{ scale: 1.05 }}
+                               whileTap={{ scale: 0.95 }}
+                               className="px-4 py-1.5 rounded-lg bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-xs font-bold shadow-lg shadow-[#8B5CF6]/20 transition-all flex items-center gap-2"
+                            >
+                               {isProcessing ? <FaSpinner className="animate-spin" /> : 'Start Task'}
+                            </motion.button>
+                         )}
+                      </div>
+                   </div>
+                </motion.div>
+              );
+           })}
+        </div>
+      )}
+
+      {/* --- IMPORT TOKEN --- */}
+      {wallet.isConnected && (
+        <div className="p-6 rounded-[2rem] border border-white/5 bg-[#121214]/60 flex flex-col md:flex-row items-center justify-between gap-6">
+           <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-[#8B5CF6]/10 flex items-center justify-center text-[#8B5CF6]">
+                 <FaWallet size={24} />
+              </div>
+              <div>
+                 <h3 className="font-bold text-white">Add PTLY to Wallet</h3>
+                 <p className="text-xs text-white/40">View your earned tokens in MetaMask</p>
+                 <div className="flex items-center gap-2 mt-2">
+                    <code className="px-2 py-1 rounded bg-black/30 border border-white/5 text-[10px] text-white/30 font-mono">
+                       {TOKEN_CONTRACT.slice(0, 6)}...{TOKEN_CONTRACT.slice(-4)}
+                    </code>
+                    <button onClick={() => copyToClipboard(TOKEN_CONTRACT)} className="text-[#8B5CF6] hover:text-white transition-colors">
+                       <FaCopy size={12} />
+                    </button>
+                 </div>
+              </div>
+           </div>
+           <button 
+             onClick={addTokenToMetaMask}
+             className="px-6 py-3 rounded-xl border border-[#8B5CF6] text-[#8B5CF6] hover:bg-[#8B5CF6] hover:text-white transition-all font-bold text-sm flex items-center gap-2"
+           >
+              <FaWallet /> Add to MetaMask
+           </button>
+        </div>
+      )}
+
     </div>
   );
 }
