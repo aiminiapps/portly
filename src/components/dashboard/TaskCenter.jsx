@@ -5,27 +5,15 @@ import {
   FaWallet, FaSpinner, FaCheckCircle,
   FaExternalLinkAlt, FaRetweet, FaComment, FaThumbsUp, FaCopy, 
   FaInfoCircle, FaGift, FaCoins,  FaChartLine, 
-  FaTrophy, FaFire,  FaShare, FaUsers, 
-  FaMobileAlt, FaCheckDouble, FaEye
+  FaFire,  FaShare, FaCheckDouble,
 } from 'react-icons/fa';
 import { RiTelegram2Line, RiTwitterXFill } from "react-icons/ri";
-import { TbTarget } from 'react-icons/tb';
-import { BiCoin, BiData, BiShield } from 'react-icons/bi';
-import { FiCpu, FiZap, FiLayers } from 'react-icons/fi'; // New Premium Icons
+import { BiCoin} from 'react-icons/bi';
+import { FiCpu, FiLayers } from 'react-icons/fi';
 
 // Storage Configuration
 const STORAGE_KEY = 'portly-task-center';
 const TOKEN_CONTRACT = process.env.NEXT_PUBLIC_TOKEN_CONTRACT_ADDRESS || '0x...';
-
-// Portly Premium Theme Colors
-const theme = {
-  primary: '#8B5CF6',    // Violet
-  secondary: '#7C3AED',  // Dark Violet
-  success: '#10B981',    // Emerald
-  error: '#EF4444',      // Red
-  surface: 'rgba(139, 92, 246, 0.1)',
-  text: '#E5E7EB'
-};
 
 // Animations
 const fadeIn = {
