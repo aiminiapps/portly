@@ -199,15 +199,9 @@ export default function AIDashboard() {
             >
               {isSidebarOpen ? <FiX className="text-white/70" /> : <FiMenu className="text-white/70" />}
             </button>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#8B5CF6] flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.4)] relative overflow-hidden group">
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                <FiCommand className="text-white w-5 h-5 relative z-10" />
-              </div>
-              <div>
-                <h1 className="font-bold text-lg tracking-tight leading-none text-white">PORTLY<span className="text-[#8B5CF6]">.AI</span></h1>
-                <p className="text-[10px] text-white/40 tracking-wider font-medium">INTELLIGENT ASSET MANAGER</p>
-              </div>
+            <div className=" items-center gap-3">
+              <Image src='/logo.png' alt='logo' width={130} height={60} className='sm:scale-125 scale-110 sm:ml-2 ml-0'/>
+                <p className="text-[10px] sm:block hidden -ml-1 text-white/40 mt-1 tracking-wider font-medium">INTELLIGENT ASSET MANAGER</p>
             </div>
           </div>
 
