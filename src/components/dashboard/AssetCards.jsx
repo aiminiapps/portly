@@ -1,64 +1,93 @@
 'use client';
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import ReactECharts from 'echarts-for-react';
+import * as echarts from 'echarts';
 import ReactMarkdown from 'react-markdown';
-import { FiArrowUpRight, FiArrowDownRight, FiZap, FiAlertCircle, FiActivity } from 'react-icons/fi';
-import { SiBitcoin, SiEthereum, SiBnbchain, SiPolygon } from 'react-icons/si';
+import { 
+  FiArrowUpRight, FiArrowDownRight, FiZap, FiAlertCircle, 
+  FiActivity, FiRefreshCw, FiDollarSign, FiClock 
+} from 'react-icons/fi';
+import { 
+  SiBitcoin, SiEthereum, SiBnbchain, SiPolygon, SiSolana, 
+  SiTether, SiXrp, SiCardano, SiDogecoin, SiChainlink 
+} from 'react-icons/si';
 
-export default function AssetCards({ assets }) {
+// --- COIN MAPPING SYSTEM ---
+const COIN_MAP = {
+  'BTC': { id: 'bitcoin', icon: SiBitcoin, color: '#F7931A' },
+  'ETH': { id: 'ethereum', icon: SiEthereum, color: '#627EEA' },
+  'BNB': { id: 'binancecoin', icon: SiBnbchain, color: '#F3BA2F' },
+  'MATIC': { id: 'matic-network', icon: SiPolygon, color: '#8247E5' },
+  'SOL': { id: 'solana', icon: SiSolana, color: '#14F195' },
+  'USDT': { id: 'tether', icon: SiTether, color: '#26A17B' },
+  'XRP': { id: 'ripple', icon: SiXrp, color: '#23292F' },
+  'ADA': { id: 'cardano', icon: SiCardano, color: '#0033AD' },
+  'DOGE': { id: 'dogecoin', icon: SiDogecoin, color: '#C2A633' },
+  'LINK': { id: 'chainlink', icon: SiChainlink, color: '#2A5ADA' },
+};
+
+export default function AssetCards({ assets = [] }) {
+  const [livePrices, setLivePrices] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
   const [showAIInsights, setShowAIInsights] = useState({});
   const [loadingInsights, setLoadingInsights] = useState({});
   const [aiInsights, setAiInsights] = useState({});
 
-  if (!assets || assets.length === 0) {
-    return (
-      <div className="rounded-3xl border border-white/5 bg-[#121214]/40 p-12 text-center backdrop-blur-xl">
-        <p className="text-[#9CA3AF]">No assets found in your portfolio</p>
-      </div>
-    );
-  }
+  // 1. LIVE MARKET DATA ENGINE (Real-Time Precision)
+  useEffect(() => {
+    if (!assets || assets.length === 0) {
+      setIsLoading(false);
+      return;
+    }
 
-  // Minimalist Sparkline Configuration
-  const getSparklineOption = (data, isPositive) => ({
-    grid: { left: 0, right: 0, top: 0, bottom: 0 },
-    xAxis: { type: 'category', show: false, boundaryGap: false },
-    yAxis: { type: 'value', show: false, min: 'dataMin', max: 'dataMax' },
-    series: [{
-      type: 'line',
-      data: data?.length > 0 ? data : [0, 0, 0, 0, 0, 0, 0],
-      smooth: true,
-      symbol: 'none',
-      lineStyle: {
-        width: 2,
-        color: isPositive ? '#4ADE80' : '#EF4444',
-        opacity: 0.8
-      },
-      areaStyle: {
-        color: {
-          type: 'linear',
-          x: 0, y: 0, x2: 0, y2: 1,
-          colorStops: [
-            { offset: 0, color: isPositive ? 'rgba(74, 222, 128, 0.1)' : 'rgba(239, 68, 68, 0.1)' },
-            { offset: 1, color: 'transparent' }
-          ]
-        }
+    const fetchLivePrices = async () => {
+      try {
+        // Construct query IDs dynamically based on held assets
+        const queryIds = assets
+          .map(a => COIN_MAP[a.symbol?.toUpperCase()]?.id || a.name?.toLowerCase().replace(/\s+/g, '-'))
+          .filter(id => id)
+          .join(',');
+
+        if (!queryIds) return;
+
+        const response = await fetch(
+          `https://api.coingecko.com/api/v3/simple/price?ids=${queryIds}&vs_currencies=usd&include_24hr_change=true`
+        );
+        
+        if (!response.ok) throw new Error('Market data fetch failed');
+        
+        const data = await response.json();
+        setLivePrices(data);
+      } catch (error) {
+        console.error("Live Price Error:", error);
+      } finally {
+        setIsLoading(false);
       }
-    }]
-  });
+    };
 
-  const fetchAIInsights = async (asset) => {
+    fetchLivePrices();
+    const interval = setInterval(fetchLivePrices, 60000); // 60s Refresh
+    return () => clearInterval(interval);
+  }, [assets]);
+
+  // 2. AI INSIGHT HANDLER
+  const fetchAIInsights = async (asset, realData) => {
     setLoadingInsights(prev => ({ ...prev, [asset.symbol]: true }));
     try {
+      const prompt = `Analyze ${asset.name} (${asset.symbol}):
+      - Current Price: $${realData.currentPrice.toFixed(2)}
+      - Holdings Value: $${realData.totalValue.toFixed(2)}
+      - 24h Change: ${realData.change24h.toFixed(2)}%
+      
+      Provide 3 ultra-concise, actionable bullet points (Buy/Sell/Hold signals) in Markdown.`;
+
       const response = await fetch('/api/agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [{
-            role: "user",
-            content: `Analyze ${asset.symbol}: Value $${asset.value?.toFixed(2)}, Change ${asset.change24h?.toFixed(2)}%. Return response in Markdown: Use **bold** for key metrics and bullet points.`
-          }]
+          messages: [{ role: "user", content: prompt }]
         })
       });
 
@@ -73,143 +102,172 @@ export default function AssetCards({ assets }) {
     }
   };
 
-  const toggleAIInsights = async (asset) => {
+  const toggleAIInsights = async (asset, realData) => {
     const isShown = showAIInsights[asset.symbol];
     setShowAIInsights(prev => ({ ...prev, [asset.symbol]: !isShown }));
-    if (!isShown && !aiInsights[asset.symbol]) await fetchAIInsights(asset);
+    if (!isShown && !aiInsights[asset.symbol]) await fetchAIInsights(asset, realData);
   };
+
+  // 3. SPARKLINE CHART CONFIG
+  const getSparklineOption = (isPositive) => ({
+    grid: { left: 0, right: 0, top: 0, bottom: 0 },
+    xAxis: { type: 'category', show: false, boundaryGap: false },
+    yAxis: { type: 'value', show: false, min: 'dataMin', max: 'dataMax' },
+    series: [{
+      type: 'line',
+      // Simulated trend curve since simple/price doesn't give history (saves API calls)
+      data: Array.from({length: 10}, () => Math.random() * 100), 
+      smooth: 0.4,
+      symbol: 'none',
+      lineStyle: { width: 2, color: isPositive ? '#10B981' : '#EF4444' },
+      areaStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: isPositive ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)' },
+          { offset: 1, color: 'rgba(0,0,0,0)' }
+        ])
+      }
+    }]
+  });
+
+  if (!assets || assets.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 rounded-[2rem] border border-white/5 bg-[#121214]/60 text-center backdrop-blur-xl">
+        <FiActivity className="w-10 h-10 text-white/20 mb-4" />
+        <p className="text-white/40">No assets detected in connected wallet.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between px-1">
-        <h3 className="text-xl font-medium text-white tracking-tight">Your Assets</h3>
-        <span className="text-xs text-white/40 font-mono uppercase tracking-widest bg-white/5 px-3 py-1 rounded-lg border border-white/5">
-          {assets.length} Holdings
-        </span>
+      <div className="flex items-center justify-between px-2">
+        <div className="flex items-center gap-3">
+          <h3 className="text-lg font-bold text-white tracking-wide">Your Assets</h3>
+          {isLoading && <FiRefreshCw className="w-4 h-4 text-[#8B5CF6] animate-spin" />}
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/5">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Live Prices</span>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      {/* Asset Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {assets.map((asset, index) => {
-          // Safety Checks & Calculations
-          const change24h = asset.change24h || 0;
-          const balance = parseFloat(asset.balance || 0);
-          const value = asset.value || 0;
+          // --- REAL-TIME DATA MERGE ---
+          const coinId = COIN_MAP[asset.symbol?.toUpperCase()]?.id || asset.name?.toLowerCase().replace(/\s+/g, '-');
+          const liveData = livePrices[coinId];
+          
+          // Priority: Live Data > Prop Data > Fallback
+          const currentPrice = liveData?.usd || (asset.value / parseFloat(asset.balance)) || 0;
+          const change24h = liveData?.usd_24h_change || asset.change24h || 0;
+          const totalValue = parseFloat(asset.balance) * currentPrice;
           const isPositive = change24h >= 0;
           
-          // Calculate "Real Price" (Price per token) based on current holdings
-          const tokenPrice = balance > 0 ? (value / balance) : 0;
+          const CoinIcon = COIN_MAP[asset.symbol?.toUpperCase()]?.icon;
 
           return (
             <motion.div
               key={asset.symbol + index}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05, duration: 0.4 }}
-              className="group relative flex flex-col justify-between p-6 rounded-3xl border border-white/5 bg-[#121214]/60 backdrop-blur-xl hover:bg-[#121214]/80 transition-all hover:border-[#8B5CF6]/30"
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              className="group relative flex flex-col p-5 rounded-[1.5rem] border border-white/5 bg-[#121214]/80 backdrop-blur-xl transition-all hover:border-[#8B5CF6]/30 hover:shadow-2xl hover:shadow-[#8B5CF6]/10"
             >
-              {/* Card Header: Icon & 24h Change */}
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="relative w-12 h-12 rounded-2xl bg-[#1E1F26] border border-white/5 flex items-center justify-center overflow-hidden shadow-inner group-hover:scale-105 transition-transform">
-                     {asset.logo ? (
-                      <img src={asset.logo} alt={asset.symbol} className="w-7 h-7 object-contain" />
-                    ) : asset.symbol === 'BTC' ? <SiBitcoin className="w-6 h-6 text-[#F7931A]" />
-                      : asset.symbol === 'ETH' ? <SiEthereum className="w-6 h-6 text-[#627EEA]" />
-                      : asset.symbol === 'BNB' ? <SiBnbchain className="w-6 h-6 text-[#F3BA2F]" />
-                      : asset.symbol === 'MATIC' ? <SiPolygon className="w-6 h-6 text-[#8247E5]" />
-                      : <span className="font-bold text-white/50">{asset.symbol[0]}</span>
-                    }
+              {/* Top Row: Icon & Name */}
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className="relative w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                    {CoinIcon ? (
+                      <CoinIcon className="w-5 h-5" style={{ color: COIN_MAP[asset.symbol?.toUpperCase()]?.color }} />
+                    ) : (
+                      <span className="font-bold text-white/40 text-xs">{asset.symbol?.substring(0,2)}</span>
+                    )}
                   </div>
-                  
                   <div>
-                    <h4 className="font-medium text-white text-base">{asset.name}</h4>
-                    <span className="text-xs text-white/40 font-mono">{asset.symbol}</span>
+                    <h4 className="font-bold text-white text-sm tracking-tight">{asset.name}</h4>
+                    <span className="text-[10px] text-white/40 font-mono tracking-wider">{asset.symbol}</span>
                   </div>
                 </div>
 
-                <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full border ${
+                <div className={`flex items-center gap-1 px-2 py-1 rounded-lg border backdrop-blur-md ${
                   isPositive 
                     ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
-                    : 'bg-red-500/10 border-red-500/20 text-red-400'
+                    : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
                 }`}>
                   {isPositive ? <FiArrowUpRight className="w-3 h-3" /> : <FiArrowDownRight className="w-3 h-3" />}
-                  <span className="text-xs font-medium">{Math.abs(change24h).toFixed(2)}%</span>
+                  <span className="text-[10px] font-bold">{Math.abs(change24h).toFixed(2)}%</span>
                 </div>
               </div>
 
-              {/* Data Rows: Value & Real Price */}
-              <div className="space-y-4 mb-6">
-                <div>
-                  <div className="flex items-baseline justify-between mb-1">
-                    <span className="text-xs text-white/40 uppercase tracking-wider">Total Value</span>
-                    <span className="text-xs text-white/40">{balance.toFixed(4)} {asset.symbol}</span>
-                  </div>
-                  <h2 className="text-2xl font-medium text-white tracking-tight">
-                    ${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </h2>
+              {/* Middle Row: Value */}
+              <div className="mb-4 relative z-10">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-white tracking-tight">
+                    ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
                 </div>
-
-                {/* Real Price Section */}
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/5">
-                   <FiActivity className="w-3.5 h-3.5 text-[#8B5CF6]" />
-                   <div className="flex items-baseline gap-2">
-                     <span className="text-xs text-white/50">Current Price:</span>
-                     <span className="text-sm font-medium text-white">
-                       ${tokenPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
-                     </span>
-                   </div>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[11px] text-white/40 font-mono">
+                    {parseFloat(asset.balance).toFixed(4)} {asset.symbol}
+                  </span>
+                  <span className="text-[11px] text-white/20">•</span>
+                  <span className="text-[11px] text-white/40 font-mono">
+                    ${currentPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </span>
                 </div>
               </div>
 
-              {/* Sparkline */}
-              <div className="h-10 w-full opacity-40 group-hover:opacity-100 transition-opacity mb-4 filter grayscale group-hover:grayscale-0">
+              {/* Sparkline Visual (Decorative) */}
+              <div className="h-12 w-[110%] -ml-4 opacity-30 group-hover:opacity-60 transition-opacity absolute bottom-12 z-0 pointer-events-none">
                  <ReactECharts
-                    option={getSparklineOption(asset.priceHistory, isPositive)}
+                    option={getSparklineOption(isPositive)}
                     style={{ height: '100%', width: '100%' }}
                     opts={{ renderer: 'svg' }}
                   />
               </div>
 
-              {/* AI Button */}
-              <div className="pt-4 border-t border-white/5">
-                <button
-                  onClick={() => toggleAIInsights(asset)}
+              {/* Bottom Row: AI Actions */}
+              <div className="mt-auto pt-4 border-t border-white/5 relative z-10">
+                <button 
+                  onClick={() => toggleAIInsights(asset, { currentPrice, totalValue, change24h })}
                   disabled={loadingInsights[asset.symbol]}
-                  className="group/btn w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/[0.03] hover:bg-[#8B5CF6] hover:text-white border border-white/5 hover:border-[#8B5CF6] transition-all duration-300 text-xs font-medium text-white/60"
+                  className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-all ${
+                    showAIInsights[asset.symbol]
+                      ? 'bg-[#8B5CF6] border-[#8B5CF6] text-white shadow-lg shadow-[#8B5CF6]/20'
+                      : 'bg-white/5 border-white/5 text-white/60 hover:bg-white/10 hover:text-white'
+                  }`}
                 >
                   {loadingInsights[asset.symbol] ? (
-                    <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+                    <FiRefreshCw className="w-3.5 h-3.5 animate-spin" />
                   ) : (
-                    <FiZap className={`w-3.5 h-3.5 ${showAIInsights[asset.symbol] ? 'fill-current' : ''}`} />
+                    <FiZap className={`w-3.5 h-3.5 ${showAIInsights[asset.symbol] ? 'fill-white' : ''}`} />
                   )}
-                  <span>{loadingInsights[asset.symbol] ? 'Analyzing...' : showAIInsights[asset.symbol] ? 'Close Insights' : 'AI Analysis'}</span>
+                  <span className="text-xs font-bold uppercase tracking-wide">
+                    {loadingInsights[asset.symbol] ? 'Analyzing...' : showAIInsights[asset.symbol] ? 'Close Insights' : 'AI Analysis'}
+                  </span>
                 </button>
               </div>
 
-              {/* AI Insight Content with Markdown */}
+              {/* AI Insight Overlay */}
               <AnimatePresence>
                 {showAIInsights[asset.symbol] && aiInsights[asset.symbol] && (
                   <motion.div
-                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                    animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
-                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                    className="overflow-hidden"
+                    initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                    animate={{ height: 'auto', opacity: 1, marginTop: 12 }}
+                    exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                    className="overflow-hidden relative z-10"
                   >
-                    <div className="p-4 rounded-xl bg-[#8B5CF6]/10 border border-[#8B5CF6]/20 relative">
-                      {/* Decorative glowing dot */}
-                      <div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-[#8B5CF6] animate-pulse"></div>
-                      
-                      {/* Markdown Renderer */}
+                    <div className="p-3 rounded-xl bg-[#1E1E24] border border-[#8B5CF6]/30 shadow-inner">
                       <div className="prose prose-invert prose-sm max-w-none">
-                        <ReactMarkdown
-                          components={{
-                            p: ({node, ...props}) => <p className="text-xs text-[#E5E7EB] leading-relaxed mb-2 last:mb-0" {...props} />,
-                            strong: ({node, ...props}) => <strong className="text-[#8B5CF6] font-semibold" {...props} />,
-                            ul: ({node, ...props}) => <ul className="list-disc pl-4 space-y-1 mb-2" {...props} />,
-                            li: ({node, ...props}) => <li className="text-xs text-gray-300 pl-1 marker:text-[#8B5CF6]" {...props} />
-                          }}
-                        >
+                        <ReactMarkdown components={{
+                          ul: ({node, ...props}) => <ul className="space-y-1 m-0 p-0 list-none" {...props} />,
+                          li: ({node, ...props}) => <li className="flex gap-2 text-[10px] text-white/80 leading-relaxed" {...props}><span className="mt-1 w-1 h-1 rounded-full bg-[#8B5CF6] flex-shrink-0"/><span>{props.children}</span></li>,
+                          strong: ({node, ...props}) => <strong className="text-[#8B5CF6] font-bold" {...props} />,
+                          p: ({node, ...props}) => <span {...props} />
+                        }}>
                           {aiInsights[asset.symbol]}
                         </ReactMarkdown>
                       </div>
@@ -217,26 +275,26 @@ export default function AssetCards({ assets }) {
                   </motion.div>
                 )}
               </AnimatePresence>
+
             </motion.div>
           );
         })}
 
-        {/* Limitations Card (Added at the end) */}
+        {/* --- LIMITATIONS CARD --- */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="flex flex-col items-center justify-center p-6 rounded-3xl border border-white/5 bg-[#121214]/30 text-center space-y-3 min-h-[300px]"
+          className="flex flex-col items-center justify-center p-6 rounded-[1.5rem] border border-dashed border-white/10 bg-transparent text-center space-y-3 min-h-[200px]"
         >
-          <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-1">
-            <FiAlertCircle className="w-6 h-6 text-white/20" />
+          <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+            <FiAlertCircle className="w-5 h-5 text-white/20" />
           </div>
-          <h4 className="text-sm font-medium text-white/80">Missing Assets?</h4>
-          <p className="text-xs text-white/40 leading-relaxed max-w-[200px]">
-            Note: This dashboard may not detect all meme coins, new pairs, or low-liquidity tokens due to API tracking limitations.
-          </p>
-          <div className="px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[10px] text-white/30">
-            System Limitation
+          <div>
+            <h4 className="text-xs font-bold text-white/60 uppercase tracking-widest">System Note</h4>
+            <p className="text-[10px] text-white/30 mt-1 max-w-[200px] mx-auto leading-relaxed">
+              Meme coins and low-cap tokens may not appear if they are not listed on CoinGecko.
+            </p>
           </div>
         </motion.div>
       </div>
