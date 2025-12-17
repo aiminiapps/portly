@@ -174,7 +174,7 @@ export default function AssetCards({ assets = [] }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="group relative flex flex-col p-5 rounded-[1.5rem] border border-white/5 bg-[#121214]/80 backdrop-blur-xl transition-all hover:border-[#8B5CF6]/30 hover:shadow-2xl hover:shadow-[#8B5CF6]/10"
+              className="group relative flex flex-col p-5 overflow-hidden rounded-[1.5rem] border border-white/5 bg-[#121214]/80 backdrop-blur-xl transition-all hover:border-[#8B5CF6]/30 hover:shadow-2xl hover:shadow-[#8B5CF6]/10"
             >
               {/* Top Row: Icon & Name */}
               <div className="flex justify-between items-start mb-4 relative z-10">
@@ -218,15 +218,6 @@ export default function AssetCards({ assets = [] }) {
                     ${currentPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-              </div>
-
-              {/* Sparkline Visual (Decorative) */}
-              <div className="h-12 w-[110%] -ml-4 opacity-30 group-hover:opacity-60 transition-opacity absolute bottom-12 z-0 pointer-events-none">
-                 <ReactECharts
-                    option={getSparklineOption(isPositive)}
-                    style={{ height: '100%', width: '100%' }}
-                    opts={{ renderer: 'svg' }}
-                  />
               </div>
 
               {/* Bottom Row: AI Actions */}
