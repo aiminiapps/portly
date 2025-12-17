@@ -3,12 +3,15 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaWallet, FaSpinner, FaCheckCircle,
-  FaExternalLinkAlt, FaRetweet, FaThumbsUp, FaCopy, 
-  FaInfoCircle, FaGift, FaCoins,  FaChartLine,  FaFire,  FaShare, FaCheckDouble
+  FaExternalLinkAlt, FaRetweet, FaComment, FaThumbsUp, FaCopy, 
+  FaInfoCircle, FaGift, FaCoins,  FaChartLine, 
+  FaTrophy, FaFire,  FaShare, FaUsers, 
+  FaMobileAlt, FaCheckDouble, FaEye
 } from 'react-icons/fa';
-import { RiTwitterXLine, RiTelegram2Line } from "react-icons/ri";
-import { BiCoin } from 'react-icons/bi';
-import { FiCpu, FiLayers } from 'react-icons/fi';
+import { RiTelegram2Line, RiTwitterXFill } from "react-icons/ri";
+import { TbTarget } from 'react-icons/tb';
+import { BiCoin, BiData, BiShield } from 'react-icons/bi';
+import { FiCpu, FiZap, FiLayers } from 'react-icons/fi'; // New Premium Icons
 
 // Storage Configuration
 const STORAGE_KEY = 'portly-task-center';
@@ -345,7 +348,7 @@ export default function TaskCenter() {
       title: 'Follow Portly on X',
       description: 'Follow @PortlyAI for the latest insights & updates',
       reward: 100,
-      icon: RiTwitterXLine,
+      icon: RiTwitterXFill,
       action: 'https://twitter.com/intent/follow?screen_name=portlyai',
       type: 'social',
       difficulty: 'easy'
@@ -365,7 +368,7 @@ export default function TaskCenter() {
       title: 'Join the Discussion',
       description: 'Comment your thoughts on our latest AI feature',
       reward: 75,
-      icon: RiTelegram2Line,
+      icon: FaComment,
       action: 'https://x.com/portlyai',
       type: 'social',
       difficulty: 'medium'
