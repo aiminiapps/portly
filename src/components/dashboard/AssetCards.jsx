@@ -13,6 +13,7 @@ import {
   SiBitcoin, SiEthereum, SiBnbchain, SiPolygon, SiSolana, 
   SiTether, SiXrp, SiCardano, SiDogecoin, SiChainlink 
 } from 'react-icons/si';
+import Image from 'next/image';
 
 // --- COIN MAPPING SYSTEM ---
 const COIN_MAP = {
@@ -187,7 +188,7 @@ export default function AssetCards({ assets = [] }) {
                     )}
                   </div>
                   <div>
-                    <h4 className="font-bold text-white text-sm tracking-tight">{asset.name}</h4>
+                    <h4 className="font-bold text-white text-sm tracking-tight -mb-2">{asset.name}</h4>
                     <span className="text-[10px] text-white/40 font-mono tracking-wider">{asset.symbol}</span>
                   </div>
                 </div>
@@ -234,7 +235,9 @@ export default function AssetCards({ assets = [] }) {
                   {loadingInsights[asset.symbol] ? (
                     <FiRefreshCw className="w-3.5 h-3.5 animate-spin" />
                   ) : (
-                    <FiZap className={`w-3.5 h-3.5 ${showAIInsights[asset.symbol] ? 'fill-white' : ''}`} />
+                    <div>
+                      <Image src='/agent.png' alt='agent logo' width={20} height={20}/>
+                    </div>
                   )}
                   <span className="text-xs font-bold uppercase tracking-wide">
                     {loadingInsights[asset.symbol] ? 'Analyzing...' : showAIInsights[asset.symbol] ? 'Close Insights' : 'AI Analysis'}
