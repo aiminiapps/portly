@@ -1,165 +1,152 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  FiArrowRight, FiBook, FiCpu, FiShield, FiZap, 
-  FiActivity, FiLayers, FiGlobe 
+  FiActivity, FiCpu, FiLayers, FiPieChart, FiZap, FiShield 
 } from 'react-icons/fi';
-import { SiEthereum, SiBitcoin } from 'react-icons/si';
+import { 
+  SiChainlink, SiBinance, SiEthereum, SiPolygon 
+} from 'react-icons/si';
 
-// --- BUTTON COMPONENTS ---
-
-const LaunchButton = () => (
-  <motion.a
-    href="/ai"
-    whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.95 }}
-    className="relative group px-8 py-4 bg-gradient-to-r from-[#8B5CF6] via-[#7C3AED] to-[#6D28D9] rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(139,92,246,0.3)] hover:shadow-[0_0_60px_rgba(139,92,246,0.5)] transition-all duration-500"
-  >
-    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
-    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></div>
-    <div className="relative flex items-center gap-3">
-      <span className="font-bold text-white text-lg tracking-wide">Launch Agent</span>
-      <div className="bg-white/20 p-1.5 rounded-lg group-hover:bg-white/30 transition-colors">
-        <FiArrowRight className="text-white w-4 h-4 group-hover:translate-x-1 transition-transform" />
-      </div>
-    </div>
-  </motion.a>
-);
-
-const DocsButton = () => (
-  <motion.a
-    href="https://docs.gitbook.com" // Replace with actual link
-    target="_blank"
-    rel="noopener noreferrer"
-    whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.95 }}
-    className="relative group px-8 py-4 bg-[#121214]/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden hover:border-white/30 transition-all duration-300"
-  >
-    <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-    <div className="relative flex items-center gap-3">
-      <FiBook className="text-[#8B5CF6] w-5 h-5 group-hover:scale-110 transition-transform" />
-      <span className="font-bold text-white/80 text-lg group-hover:text-white transition-colors">Documentation</span>
-    </div>
-  </motion.a>
-);
-
-// --- VISUALIZATION COMPONENT (Right Side) ---
-
-const OrbitingSatellite = ({ icon: Icon, color, delay, radius, speed, size = "md" }) => (
-  <motion.div
-    className="absolute top-1/2 left-1/2"
-    animate={{ rotate: 360 }}
-    transition={{ duration: speed, repeat: Infinity, ease: "linear", delay: -delay }}
-    style={{ width: radius * 2, height: radius * 2, x: '-50%', y: '-50%' }}
-  >
-    <motion.div
-      className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 
-        ${size === 'lg' ? 'w-16 h-16' : 'w-12 h-12'}
-        rounded-2xl border border-white/10 bg-[#0A0A0B]/80 backdrop-blur-md 
-        flex items-center justify-center shadow-2xl z-20`}
-      style={{ boxShadow: `0 0 20px ${color}40` }}
-      // Counter-rotate to keep icon upright
-      animate={{ rotate: -360 }}
-      transition={{ duration: speed, repeat: Infinity, ease: "linear", delay: -delay }}
-    >
-      <Icon className={`w-1/2 h-1/2 ${size === 'lg' ? 'text-white' : 'text-white/80'}`} style={{ color: size === 'lg' ? color : undefined }} />
-      {/* Glow dot */}
-      <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-white animate-pulse"></div>
-    </motion.div>
-  </motion.div>
-);
-
-const NeuralCore = () => {
+// --- MOCKUP DASHBOARD COMPONENT ---
+// This component simulates a screenshot of the application's interface.
+const DashboardMockup = () => {
   return (
-    <div className="relative w-full aspect-square max-w-[600px] flex items-center justify-center">
-      
-      {/* 1. The Central Brain (AI Agent) */}
-      <div className="relative z-30">
-        <motion.div
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="w-32 h-32 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#4C1D95] flex items-center justify-center shadow-[0_0_60px_rgba(124,58,237,0.5)] border border-white/20 relative"
-        >
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-30 rounded-full"></div>
-          <FiCpu className="w-14 h-14 text-white drop-shadow-lg" />
-          
-          {/* Orbital Rings around Core */}
-          <motion.div 
-            animate={{ rotate: 360 }}
-            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-[-10px] rounded-full border border-dashed border-white/30"
-          />
-          <motion.div 
-            animate={{ rotate: -360 }}
-            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-[-20px] rounded-full border border-dotted border-white/20"
-          />
-        </motion.div>
+    <div className="w-full aspect-[16/9] bg-[#121214] rounded-xl overflow-hidden flex flex-col">
+      {/* App Header */}
+      <div className="h-12 bg-[#1E1E24] border-b border-white/5 flex items-center justify-between px-4">
+        <div className="flex gap-2">
+          <div className="w-3 h-3 rounded-full bg-red-500/30"></div>
+          <div className="w-3 h-3 rounded-full bg-yellow-500/30"></div>
+          <div className="w-3 h-3 rounded-full bg-green-500/30"></div>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-white/40">
+          <FiZap className="text-[#8B5CF6]" />
+          <span>AI Engine: Online</span>
+        </div>
       </div>
 
-      {/* 2. Connection Lines (SVG) */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 opacity-30">
-        <circle cx="50%" cy="50%" r="140" fill="none" stroke="#8B5CF6" strokeWidth="1" strokeDasharray="4 4" />
-        <circle cx="50%" cy="50%" r="220" fill="none" stroke="#4ADE80" strokeWidth="1" strokeDasharray="4 4" />
-      </svg>
+      {/* App Body */}
+      <div className="flex-1 flex relative">
+        {/* Sidebar (Simplified) */}
+        <div className="w-16 bg-[#1E1E24]/50 border-r border-white/5 py-4 flex flex-col items-center gap-6">
+          {[FiLayers, FiPieChart, FiCpu, FiActivity].map((Icon, i) => (
+            <div key={i} className={`p-2 rounded-lg ${i === 0 ? 'bg-[#8B5CF6]/20 text-[#8B5CF6]' : 'text-white/30'}`}>
+              <Icon size={18} />
+            </div>
+          ))}
+        </div>
 
-      {/* 3. Orbiting Satellites (Data Points) */}
-      
-      {/* Inner Orbit (Assets) */}
-      <OrbitingSatellite icon={SiEthereum} color="#627EEA" radius={140} speed={25} delay={0} />
-      <OrbitingSatellite icon={SiBitcoin} color="#F7931A" radius={140} speed={25} delay={8} />
-      <OrbitingSatellite icon={FiShield} color="#10B981" radius={140} speed={25} delay={16} />
+        {/* Main Content Area */}
+        <div className="flex-1 p-6 space-y-6 bg-gradient-to-br from-[#121214] to-[#0A0A0B]">
+          
+          {/* Top Stats Row */}
+          <div className="grid grid-cols-3 gap-4">
+            {/* Net Worth Card */}
+            <div className="col-span-2 p-5 rounded-xl bg-white/5 border border-white/5 relative overflow-hidden">
+              <div className="absolute right-0 top-0 p-4 text-[#8B5CF6]/20"><FiActivity size={40} /></div>
+              <div className="text-sm text-white/50 mb-1">Total Net Worth</div>
+              <div className="text-3xl font-bold text-white">$124,500.85</div>
+              <div className="text-xs text-emerald-400 mt-1 flex items-center gap-1">
+                <span>+$2,450.10 (24h)</span>
+              </div>
+              {/* Fake Chart Line */}
+              <div className="mt-4 h-16 w-full opacity-30">
+                <svg viewBox="0 0 100 30" className="w-full h-full overflow-visible">
+                  <path d="M0,25 C10,20 20,28 30,15 C40,5 50,20 60,10 C70,0 80,12 90,5 L100,15" fill="none" stroke="#8B5CF6" strokeWidth="2" />
+                  <defs>
+                    <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="rgba(139, 92, 246, 0.2)" />
+                      <stop offset="100%" stopColor="rgba(139, 92, 246, 0)" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,25 C10,20 20,28 30,15 C40,5 50,20 60,10 C70,0 80,12 90,5 L100,15 L100,30 L0,30 Z" fill="url(#grad)" />
+                </svg>
+              </div>
+            </div>
+            {/* AI Insight Card */}
+            <div className="p-5 rounded-xl bg-gradient-to-br from-[#7C3AED]/10 to-[#8B5CF6]/5 border border-[#8B5CF6]/20 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-2 text-[#8B5CF6]">
+                  <FiCpu /> <span className="text-xs font-bold">AI Insight</span>
+                </div>
+                <div className="text-sm text-white/80 leading-relaxed">
+                  Your portfolio's <strong className="text-white">risk level is low</strong>. Consider increasing exposure to <strong className="text-white">Layer 2</strong> protocols for potential upside.
+                </div>
+              </div>
+              <div className="mt-2 flex gap-1">
+                <div className="h-1.5 flex-1 bg-[#8B5CF6] rounded-full"></div>
+                <div className="h-1.5 flex-1 bg-[#8B5CF6]/30 rounded-full"></div>
+                <div className="h-1.5 flex-1 bg-[#8B5CF6]/30 rounded-full"></div>
+              </div>
+            </div>
+          </div>
 
-      {/* Outer Orbit (Features) */}
-      <OrbitingSatellite icon={FiActivity} color="#F59E0B" radius={220} speed={40} delay={5} size="lg" />
-      <OrbitingSatellite icon={FiLayers} color="#3B82F6" radius={220} speed={40} delay={18} size="lg" />
-      <OrbitingSatellite icon={FiGlobe} color="#EC4899" radius={220} speed={40} delay={30} size="lg" />
+          {/* Asset List Mockup */}
+          <div>
+            <div className="text-sm font-bold text-white/70 mb-3">Top Holdings</div>
+            <div className="space-y-2">
+              {[
+                { sym: 'ETH', name: 'Ethereum', price: '$3,450.20', change: '+2.5%', icon: SiEthereum, color: 'text-[#627EEA]' },
+                { sym: 'BNB', name: 'Binance Coin', price: '$420.15', change: '+1.2%', icon: SiBinance, color: 'text-[#F3BA2F]' },
+                { sym: 'MATIC', name: 'Polygon', price: '$0.95', change: '-0.5%', icon: SiPolygon, color: 'text-[#8247E5]' },
+              ].map((asset, i) => (
+                <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg bg-white/5 ${asset.color}`}>
+                      <asset.icon size={16} />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-white">{asset.name}</div>
+                      <div className="text-xs text-white/40">{asset.sym}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-bold text-white">{asset.price}</div>
+                    <div className={`text-xs ${asset.change.startsWith('+') ? 'text-emerald-400' : 'text-red-400'}`}>{asset.change}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-      {/* 4. Ambient Glows */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#8B5CF6]/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
+        </div>
+
+        {/* AI Scanner Overlay Effect */}
+        <motion.div 
+          animate={{ top: ['-100%', '200%'] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          className="absolute left-0 right-0 h-[100%] bg-gradient-to-b from-transparent via-[#8B5CF6]/10 to-transparent pointer-events-none"
+        />
+      </div>
     </div>
   );
 };
 
-// --- MAIN HERO COMPONENT ---
-
 export default function HeroSection() {
   return (
-    <div className="relative min-h-screen bg-[#0A0A0B] text-white overflow-hidden flex items-center justify-center selection:bg-[#8B5CF6] selection:text-white">
+    <section className="relative min-h-screen w-full flex flex-col items-center justify-start pt-24 pb-16 overflow-hidden bg-[#0A0A0B] text-white selection:bg-[#8B5CF6] selection:text-white">
       
-      {/* Background FX */}
+      {/* --- BACKGROUND AMBIENCE --- */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-[#7C3AED]/10 rounded-full blur-[150px] animate-pulse-slow"></div>
-        <div className="absolute bottom-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-[#8B5CF6]/5 rounded-full blur-[150px]"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[40vw] bg-[#7C3AED]/10 rounded-full blur-[150px]"></div>
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
       </div>
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+      {/* --- MAIN CONTENT --- */}
+      <div className="relative z-10 max-w-6xl w-full mx-auto px-6 flex flex-col items-center text-center space-y-12">
         
-        {/* LEFT: Content */}
-        <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-8">
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm shadow-lg"
-          >
-            <FiZap className="text-[#8B5CF6] w-4 h-4" />
-            <span className="text-sm font-bold text-white/90 tracking-wide">AI Portfolio Manager v2.0</span>
-          </motion.div>
-
+        {/* 1. Heading & Text */}
+        <div className="space-y-6 max-w-4xl">
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl lg:text-8xl font-black tracking-tighter leading-[1.1]"
+            transition={{ duration: 0.6 }}
+            className="text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-none"
           >
-            Wealth <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#C4B5FD] to-[#8B5CF6]">
-              Autopilot.
+            Your Crypto Universe, <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#A78BFA] to-[#8B5CF6]">
+              Reimagined.
             </span>
           </motion.h1>
 
@@ -167,46 +154,47 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg text-white/50 max-w-xl leading-relaxed"
+            className="text-xl text-white/50 max-w-2xl mx-auto leading-relaxed"
           >
-            Experience the next evolution of crypto management. Real-time analytics, risk forecasting, and automated optimization—powered by advanced neural networks.
+            Stop guessing. Start knowing. Portly uses advanced AI to analyze, track, and optimize your entire crypto portfolio in real-time.
           </motion.p>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
-          >
-            <LaunchButton />
-            <DocsButton />
-          </motion.div>
-
-          {/* Social Proof Mini */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="pt-8 flex items-center gap-6 opacity-60 grayscale hover:grayscale-0 transition-all duration-500"
-          >
-            <span className="text-xs font-bold uppercase tracking-widest text-white/40">Trusted By</span>
-            {['Alchemy', 'Moralis', 'Ethers.js'].map((tech, i) => (
-              <span key={i} className="text-sm font-bold text-white/60">{tech}</span>
-            ))}
-          </motion.div>
         </div>
 
-        {/* RIGHT: Neural Visual */}
+        {/* 2. Dashboard Mockup Visual */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className="flex items-center justify-center lg:justify-end"
+          initial={{ opacity: 0, y: 40, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+          className="relative w-full max-w-5xl rounded-3xl p-2 bg-gradient-to-b from-white/10 to-white/0 backdrop-blur-xl border border-white/10 shadow-2xl shadow-[#8B5CF6]/20"
         >
-          <NeuralCore />
+          <div className="rounded-2xl overflow-hidden ring-1 ring-white/5">
+            <DashboardMockup />
+          </div>
+          
+          {/* Glow Effect behind the mockup */}
+          <div className="absolute -inset-4 bg-gradient-to-t from-[#8B5CF6]/20 to-transparent blur-3xl -z-10 rounded-[3rem] opacity-60"></div>
+        </motion.div>
+
+        {/* 3. Trusted By Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.7 }}
+          className="pt-8 flex flex-col items-center space-y-6"
+        >
+          <p className="text-sm font-medium text-white/40 uppercase tracking-widest">
+            Powered by Best-in-Class Data Infrastructure
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 opacity-50">
+            {/* Logos - Using Icons for now, replace with real SVGs */}
+            <div className="flex items-center gap-2 text-2xl hover:text-white hover:opacity-100 transition-all cursor-default"><FiShield /> Moralis</div>
+            <div className="flex items-center gap-2 text-2xl hover:text-white hover:opacity-100 transition-all cursor-default"><FiZap /> Alchemy</div>
+            <div className="flex items-center gap-2 text-2xl hover:text-white hover:opacity-100 transition-all cursor-default"><SiChainlink /> Chainlink</div>
+            <div className="flex items-center gap-2 text-xl font-bold hover:text-white hover:opacity-100 transition-all cursor-default">CoinGecko</div>
+          </div>
         </motion.div>
 
       </div>
-    </div>
+    </section>
   );
 }
