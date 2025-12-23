@@ -5,7 +5,7 @@ import {
   FiActivity, FiCpu, FiLayers, FiPieChart, FiZap, FiShield 
 } from 'react-icons/fi';
 import { 
-  SiChainlink, SiBinance, SiEthereum, SiPolygon 
+  SiChainlink, SiBinance, SiEthereum, SiPolygon  
 } from 'react-icons/si';
 
 // --- MOCKUP DASHBOARD COMPONENT ---
