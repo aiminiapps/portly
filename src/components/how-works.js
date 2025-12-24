@@ -1,327 +1,374 @@
 "use client";
 
-import React, { useRef, useState, Suspense } from "react";
-import { motion, useScroll, useTransform, useSpring, useInView } from "framer-motion";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { 
-  Float, 
-  MeshDistortMaterial, 
-  Icosahedron, 
-  Torus, 
-  Cylinder, 
-  Sparkles, 
-  Environment, 
-  Html 
-} from "@react-three/drei";
+import React, { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import { 
   FaWallet, 
-  FaRocket, 
+  FaFingerprint,
   FaCheckCircle 
 } from "react-icons/fa";
-import { MdAutoGraph, MdSecurity } from "react-icons/md";
-import { BsLightningChargeFill } from "react-icons/bs";
-import * as THREE from "three";
+import { RiBrainLine, RiDonutChartFill } from "react-icons/ri";
+import { BsLightningChargeFill, BsStars } from "react-icons/bs";
 
-// --- 3D COMPONENT 1: WALLET CONNECTION (The "Link") ---
-const WalletScene = () => {
-  const meshRef = useRef();
-  
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    if(meshRef.current) {
-        meshRef.current.rotation.y = t * 0.4;
-        meshRef.current.rotation.z = Math.sin(t * 0.5) * 0.2;
-    }
-  });
-
-  return (
-    <group>
-      <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-        {/* Abstract Geometric Wallet Representation */}
-        <Icosahedron ref={meshRef} args={[1.2, 0]}>
-          <MeshDistortMaterial 
-            color="#10B981" 
-            emissive="#065F46" 
-            emissiveIntensity={0.5} 
-            wireframe={false} 
-            roughness={0.1} 
-            metalness={0.8}
-            distort={0.3} 
-            speed={2} 
-          />
-        </Icosahedron>
-        {/* Floating Particles/Network */}
-        <Sparkles count={20} scale={3} size={2} speed={0.4} opacity={0.5} color="#34D399" />
-      </Float>
-    </group>
-  );
+// --- DESIGN TOKENS (Portly.AI System) ---
+const THEME = {
+  primary: "#8B5CF6",    // Primary Violet
+  deep: "#7C3AED",       // Deep Violet
+  accent: "#A78BFA",     // Electric Lavender
+  highlight: "#C4B5FD",  // Soft Lilac
+  bg: "#0A0A0B",         // Deepest Void
+  glass: "#121214",      // Glass Surface
+  elevated: "#1E1E24",   // Elevated Surface
+  success: "#10B981",    // Emerald
+  warning: "#F59E0B",    // Amber
 };
 
-// --- 3D COMPONENT 2: AI DASHBOARD (The "Scanner") ---
-const DashboardScene = () => {
-  const groupRef = useRef();
-  
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    if(groupRef.current) {
-        groupRef.current.rotation.x = Math.PI / 4;
-        groupRef.current.rotation.z = t * 0.2;
-    }
-  });
+// --------------------------------------------------------
+// 1. UI CARD COMPONENTS (The "Cool Cards")
+// --------------------------------------------------------
 
+// CARD 1: WALLET CONNECT SIMULATION
+const WalletCard = () => {
   return (
-    <group ref={groupRef}>
-      <Float speed={4} rotationIntensity={0} floatIntensity={0.2}>
-        {/* Scanning Rings */}
-        <Torus args={[1.5, 0.05, 16, 100]}>
-          <meshBasicMaterial color="#22D3EE" transparent opacity={0.6} />
-        </Torus>
-        <Torus args={[1.0, 0.05, 16, 100]} rotation={[Math.PI / 2, 0, 0]}>
-           <meshBasicMaterial color="#8B5CF6" transparent opacity={0.6} />
-        </Torus>
-        
-        {/* Central Core */}
-        <mesh>
-           <sphereGeometry args={[0.5, 32, 32]} />
-           <meshStandardMaterial color="#ffffff" emissive="#22D3EE" emissiveIntensity={1} />
-        </mesh>
-      </Float>
-    </group>
-  );
-};
-
-// --- 3D COMPONENT 3: REWARDS (The "Token") ---
-const RewardScene = () => {
-  const coinRef = useRef();
-
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    if(coinRef.current) {
-        coinRef.current.rotation.y = t * 3; // Fast spin
-    }
-  });
-
-  return (
-    <group>
-      <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
-        <group ref={coinRef} rotation={[Math.PI / 2, 0, 0]}>
-            {/* The Token */}
-            <Cylinder args={[1.2, 1.2, 0.2, 32]}>
-                <meshStandardMaterial color="#F59E0B" metalness={0.9} roughness={0.1} />
-            </Cylinder>
-            <Torus args={[1.2, 0.1, 16, 32]}>
-                <meshStandardMaterial color="#FBBF24" metalness={1} roughness={0.1} />
-            </Torus>
-        </group>
-        {/* Speed Lines / Sparkles */}
-        <Sparkles count={40} scale={4} size={5} speed={2} opacity={0.8} color="#FDE68A" />
-      </Float>
-    </group>
-  );
-};
-
-// --- SVG CONNECTOR LINE COMPONENT ---
-const TimelineConnector = ({ scrollYProgress }) => {
-    const scaleY = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
-
-    return (
-        <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-px -translate-x-1/2 z-0 hidden md:block">
-            {/* Background Line */}
-            <div className="absolute inset-0 bg-white/10 w-full h-full" />
-            {/* Animated Fill Line */}
-            <motion.div 
-                className="absolute top-0 left-0 w-full bg-gradient-to-b from-[#10B981] via-[#22D3EE] to-[#F59E0B]"
-                style={{ height: "100%", scaleY, transformOrigin: "top" }}
-            />
-        </div>
-    );
-};
-
-// --- STEP CARD COMPONENT ---
-const WorkflowStep = ({ 
-  index, 
-  title, 
-  description, 
-  SceneComponent, 
-  icon: Icon, 
-  align = "left",
-  actionText
-}) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
-  return (
-    <div ref={ref} className={`relative z-10 flex flex-col md:flex-row items-center gap-12 mb-32 ${align === "right" ? "md:flex-row-reverse" : ""}`}>
+    <div className="relative w-full h-64 rounded-2xl bg-[#121214] border border-[#C4B5FD]/10 overflow-hidden flex flex-col items-center justify-center p-6 shadow-2xl">
+      {/* Background Gradient */}
+      <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#8B5CF6]/10 to-transparent pointer-events-none" />
       
-      {/* 3D Visual Container */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
-        transition={{ duration: 0.8 }}
-        className="w-full md:w-1/2 h-[350px] relative"
-      >
-        <div className="absolute inset-0 bg-gradient-to-tr from-[#10B981]/10 to-transparent rounded-full blur-[80px]" />
-        
-        {/* Tech Borders SVG Overlay */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-40">
-            <motion.rect 
-                x="10%" y="10%" width="80%" height="80%" rx="20"
-                fill="none" stroke="white" strokeWidth="1" strokeDasharray="10 10"
-                initial={{ pathLength: 0 }}
-                animate={isInView ? { pathLength: 1 } : { pathLength: 0 }}
-                transition={{ duration: 2 }}
-            />
-            <circle cx="50%" cy="50%" r="5" fill="#10B981" />
-        </svg>
-
-        {/* 3D Canvas */}
-        <Canvas camera={{ position: [0, 0, 4] }}>
-          <Suspense fallback={null}>
-             <ambientLight intensity={0.5} />
-             <spotLight position={[10, 10, 10]} intensity={1} color="white" />
-             <Environment preset="city" />
-             <SceneComponent />
-          </Suspense>
-        </Canvas>
-      </motion.div>
-
-      {/* Text Content */}
-      <motion.div 
-        initial={{ opacity: 0, x: align === "left" ? 50 : -50 }}
-        animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: align === "left" ? 50 : -50 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="w-full md:w-1/2 px-6"
-      >
-        {/* Step Indicator */}
-        <div className="flex items-center gap-4 mb-4">
-             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#1E1E24] border border-white/10 text-[#10B981] font-bold shadow-[0_0_15px_-3px_rgba(16,185,129,0.4)]">
-                {index + 1}
-             </div>
-             <div className="h-px w-20 bg-gradient-to-r from-[#10B981] to-transparent" />
+      {/* Simulation UI */}
+      <div className="w-full max-w-[280px] bg-[#1E1E24] rounded-xl border border-white/5 p-4 relative z-10">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-[#F59E0B]/20 flex items-center justify-center text-[#F59E0B]">
+               <FaWallet size={14} />
+            </div>
+            <div className="flex flex-col">
+               <span className="text-xs text-gray-400">MetaMask</span>
+               <span className="text-[10px] text-gray-500">BSC Network</span>
+            </div>
+          </div>
+          <div className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
         </div>
-
-        <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 flex items-center gap-3">
-          <Icon className="text-[#10B981]" /> {title}
-        </h3>
         
-        <p className="text-gray-400 text-lg leading-relaxed mb-8">
-          {description}
-        </p>
+        {/* Loading Bar Animation */}
+        <div className="space-y-2">
+           <div className="flex justify-between text-[10px] text-gray-400">
+              <span>Status</span>
+              <span className="text-[#A78BFA]">Syncing...</span>
+           </div>
+           <div className="h-1.5 w-full bg-black/50 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA]"
+                initial={{ width: "0%" }}
+                whileInView={{ width: "100%" }}
+                transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity, repeatDelay: 2 }}
+              />
+           </div>
+        </div>
+      </div>
 
-        {/* Action Button */}
-        <button className="group relative px-6 py-3 rounded-lg bg-white/5 border border-white/10 overflow-hidden hover:border-[#10B981]/50 transition-colors">
-          <div className="absolute inset-0 bg-[#10B981]/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-          <span className="relative flex items-center gap-2 text-white font-medium">
-             {actionText} <FaCheckCircle className="text-[#10B981] opacity-0 group-hover:opacity-100 transition-opacity" />
-          </span>
-        </button>
-
-      </motion.div>
+      {/* Connection Beam */}
+      <div className="absolute inset-0 border border-[#8B5CF6]/20 rounded-2xl pointer-events-none">
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-[#8B5CF6] to-transparent shadow-[0_0_10px_#8B5CF6]" />
+      </div>
     </div>
   );
 };
 
-// --- MAIN COMPONENT ---
-export default function WorkflowSection() {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  });
+// CARD 2: AI DASHBOARD SIMULATION
+const AnalysisCard = () => {
+  return (
+    <div className="relative w-full h-64 rounded-2xl bg-[#121214] border border-[#C4B5FD]/10 overflow-hidden p-6 shadow-2xl group">
+      {/* Header UI */}
+      <div className="flex items-center justify-between mb-6">
+         <div className="flex items-center gap-2">
+             <RiBrainLine className="text-[#A78BFA]" />
+             <span className="text-xs font-bold text-white tracking-wider">AI_SENTINEL</span>
+         </div>
+         <div className="px-2 py-0.5 rounded bg-[#10B981]/10 text-[#10B981] text-[10px] border border-[#10B981]/20">
+            ACTIVE
+         </div>
+      </div>
 
+      {/* Chart Simulation */}
+      <div className="flex items-end justify-between h-24 gap-2 mb-4">
+         {[40, 70, 50, 90, 60, 80, 45].map((height, i) => (
+            <motion.div 
+               key={i}
+               className="w-full bg-[#1E1E24] rounded-t-sm relative overflow-hidden"
+               initial={{ height: "10%" }}
+               whileInView={{ height: `${height}%` }}
+               transition={{ duration: 0.8, delay: i * 0.1 }}
+            >
+               <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-to-t from-[#8B5CF6]/40 to-transparent" />
+               <div className="absolute top-0 left-0 w-full h-1 bg-[#A78BFA]/50" />
+            </motion.div>
+         ))}
+      </div>
+
+      {/* Data Row */}
+      <div className="flex gap-3">
+         <div className="flex-1 bg-[#0A0A0B] rounded p-2 border border-white/5">
+            <div className="text-[10px] text-gray-500 mb-1">Risk Score</div>
+            <div className="text-xs text-white font-mono">12.4%</div>
+         </div>
+         <div className="flex-1 bg-[#0A0A0B] rounded p-2 border border-white/5">
+            <div className="text-[10px] text-gray-500 mb-1">Potential</div>
+            <div className="text-xs text-[#10B981] font-mono">+24.8%</div>
+         </div>
+      </div>
+    </div>
+  );
+};
+
+// CARD 3: REWARD NOTIFICATION
+const RewardCard = () => {
+  return (
+    <div className="relative w-full h-64 rounded-2xl bg-[#121214] border border-[#C4B5FD]/10 overflow-hidden flex flex-col items-center justify-center p-6 shadow-2xl">
+      {/* Glow Effect */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#8B5CF6]/10 via-transparent to-transparent" />
+
+      {/* Notification Toast */}
+      <motion.div 
+         initial={{ y: 20, opacity: 0 }}
+         whileInView={{ y: 0, opacity: 1 }}
+         transition={{ duration: 0.6 }}
+         className="w-full bg-[#0A0A0B] border border-[#F59E0B]/20 rounded-xl p-4 relative z-10 shadow-lg"
+      >
+         <div className="flex items-start gap-3">
+            <div className="mt-1 w-8 h-8 rounded-full bg-gradient-to-br from-[#F59E0B] to-[#FBBF24] flex items-center justify-center text-black shadow-[0_0_15px_#F59E0B]">
+               <BsStars size={14} />
+            </div>
+            <div>
+               <h4 className="text-sm font-bold text-white">Task Completed!</h4>
+               <p className="text-xs text-gray-400 mt-1">
+                  You earned <span className="text-[#F59E0B] font-bold">500 $PTLY</span>
+               </p>
+            </div>
+         </div>
+         
+         {/* Progress Bar */}
+         <div className="mt-3 w-full h-1 bg-[#1E1E24] rounded-full overflow-hidden">
+             <motion.div 
+                className="h-full bg-[#F59E0B]" 
+                initial={{ width: "0%" }}
+                whileInView={{ width: "100%" }}
+                transition={{ duration: 0.9, delay: 0.4 }}
+             />
+         </div>
+         <div className="text-[10px] text-right text-gray-500 mt-1">0.9s transfer time</div>
+      </motion.div>
+
+      {/* Floating Coins Effect (CSS Dots) */}
+      {[...Array(5)].map((_, i) => (
+         <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-[#F59E0B] rounded-full"
+            initial={{ opacity: 0, y: 0 }}
+            whileInView={{ opacity: [0, 1, 0], y: -60, x: (i - 2) * 20 }}
+            transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+            style={{ bottom: "30%", left: "50%" }}
+         />
+      ))}
+    </div>
+  );
+};
+
+
+// --------------------------------------------------------
+// 2. TIMELINE & LAYOUT
+// --------------------------------------------------------
+
+const TimelineStep = ({ 
+  index, 
+  title, 
+  description, 
+  CardComponent, 
+  icon: Icon, 
+  align 
+}) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-20%" });
+
+  return (
+    <div ref={ref} className="w-full grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-0 md:gap-12 items-center mb-24 last:mb-0 relative">
+      
+      {/* MOBILE TIMELINE LINE (Left side) */}
+      <div className="absolute left-4 top-0 bottom-0 w-px bg-white/10 md:hidden z-0" />
+
+      {/* LEFT COLUMN */}
+      <div className={`
+         relative z-10 pl-12 md:pl-0 mb-8 md:mb-0
+         ${align === 'right' ? 'md:text-right md:order-1' : 'md:text-left md:order-3'}
+      `}>
+         {/* Render Text if align is Right (Desktop) or Card if align is Left */}
+         <div className={`md:block ${align === 'right' ? 'block' : 'hidden'}`}>
+             <ContentBlock index={index} title={title} description={description} align="right" isInView={isInView} />
+         </div>
+         <div className={`md:block ${align === 'left' ? 'block' : 'hidden'}`}>
+             <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.6 }}
+             >
+                <CardComponent />
+             </motion.div>
+         </div>
+      </div>
+
+      {/* MIDDLE COLUMN (Timeline Node) */}
+      <div className="hidden md:flex flex-col items-center justify-center relative h-full order-2">
+         {/* Vertical Line */}
+         <div className="absolute top-0 bottom-0 w-px bg-white/10 z-0">
+            <motion.div 
+               className="w-full bg-gradient-to-b from-[#8B5CF6] to-[#A78BFA]"
+               initial={{ height: "0%" }}
+               whileInView={{ height: "100%" }}
+               transition={{ duration: 1, delay: 0.2 }}
+               style={{ transformOrigin: "top" }}
+            />
+         </div>
+         {/* Icon Node */}
+         <motion.div 
+            initial={{ scale: 0 }}
+            animate={isInView ? { scale: 1 } : { scale: 0 }}
+            className="relative z-10 w-12 h-12 rounded-full bg-[#0A0A0B] border border-[#8B5CF6]/50 flex items-center justify-center shadow-[0_0_20px_-5px_rgba(139,92,246,0.6)]"
+         >
+            <Icon className="text-[#A78BFA]" size={20} />
+         </motion.div>
+      </div>
+
+      {/* MOBILE ICON NODE */}
+      <div className="absolute left-0 top-0 w-8 h-8 rounded-full bg-[#0A0A0B] border border-[#8B5CF6]/30 flex items-center justify-center md:hidden z-20 translate-x-[0px]">
+         <span className="text-xs font-bold text-[#A78BFA]">{index + 1}</span>
+      </div>
+
+      {/* RIGHT COLUMN */}
+      <div className={`
+         relative z-10 pl-12 md:pl-0
+         ${align === 'right' ? 'md:order-3' : 'md:order-1'}
+      `}>
+          {/* Render Card if align is Right (Desktop) or Text if align is Left */}
+          <div className={`md:block ${align === 'right' ? 'hidden' : 'block'}`}>
+             <ContentBlock index={index} title={title} description={description} align="left" isInView={isInView} />
+         </div>
+         <div className={`md:block ${align === 'left' ? 'hidden' : 'block'}`}>
+             <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.6 }}
+             >
+                <CardComponent />
+             </motion.div>
+         </div>
+      </div>
+
+    </div>
+  );
+};
+
+const ContentBlock = ({ index, title, description, align, isInView }) => (
+  <motion.div 
+    initial={{ opacity: 0, x: align === 'left' ? -30 : 30 }}
+    animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: align === 'left' ? -30 : 30 }}
+    transition={{ duration: 0.6, delay: 0.2 }}
+    className={`flex flex-col ${align === 'left' ? 'md:items-start md:text-left' : 'md:items-end md:text-right'}`}
+  >
+     <div className="mb-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1E1E24] border border-[#C4B5FD]/20 w-fit">
+        <span className="text-xs font-mono font-semibold text-[#A78BFA]">PHASE 0{index + 1}</span>
+     </div>
+     <h3 className="text-2xl md:text-3xl font-bold text-white mb-4 tracking-tight">
+        {title}
+     </h3>
+     <p className="text-[#E5E7EB] text-base md:text-lg leading-relaxed max-w-md">
+        {description}
+     </p>
+  </motion.div>
+);
+
+
+// --------------------------------------------------------
+// 3. MAIN WORKFLOW SECTION
+// --------------------------------------------------------
+
+export default function WorkflowSection() {
   const steps = [
     {
-      title: "Connect & Sync",
-      description: "Connect your MetaMask wallet securely via the BSC network. Whether using the browser extension or the mobile app, integration is seamless and instant.",
-      SceneComponent: WalletScene,
-      icon: FaWallet,
-      actionText: "Connect Wallet",
+      title: "Connect Wallet",
+      description: "Securely link your MetaMask wallet via the BSC network. Our protocol uses non-custodial login, ensuring your keys remain on your device while instantly syncing your on-chain identity.",
+      CardComponent: WalletCard,
+      icon: FaFingerprint,
       align: "left"
     },
     {
-      title: "AI Intelligence",
-      description: "Your AI-powered dashboard activates immediately. Visualize complex data, receive instant risk analysis, and gain actionable insights in a clean, high-performance interface.",
-      SceneComponent: DashboardScene,
-      icon: MdAutoGraph,
-      actionText: "View Dashboard",
+      title: "AI-Powered Analysis",
+      description: "Upon connection, the Portly AI engine activates. It scans your assets, visualizes risk factors, and generates real-time market opportunities in a clean, glassmorphic dashboard.",
+      CardComponent: AnalysisCard,
+      icon: RiDonutChartFill,
       align: "right"
     },
     {
       title: "Instant Rewards",
-      description: "Navigate to the Rewards tab. Complete simple tasks like following on X, reposting, or liking. Within 0.9s, your reward tokens are automatically credited to your wallet.",
-      SceneComponent: RewardScene,
+      description: "Navigate to the Rewards tab and engage with the ecosystem. Complete simple tasks like social interactions, and receive $PTLY tokens in your wallet within 0.9 seconds.",
+      CardComponent: RewardCard,
       icon: BsLightningChargeFill,
-      actionText: "Start Earning",
       align: "left"
     }
   ];
 
   return (
-    <section ref={containerRef} className="relative w-full py-24 bg-[#050505] overflow-hidden">
+    <section className="relative w-full py-24 bg-[#0A0A0B] overflow-hidden">
       
-      {/* Background Ambience */}
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#10B981]/50 to-transparent" />
-      <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-[#10B981]/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-20 left-0 w-[500px] h-[500px] bg-[#8B5CF6]/5 blur-[120px] rounded-full pointer-events-none" />
+      {/* BACKGROUND ELEMENTS (The Void) */}
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#8B5CF6]/20 to-transparent" />
+      <div className="absolute top-[10%] right-[-10%] w-[500px] h-[500px] bg-[#7C3AED]/5 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[10%] left-[-10%] w-[500px] h-[500px] bg-[#A78BFA]/5 blur-[100px] rounded-full pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Header */}
-        <div className="text-center mb-32">
+        {/* HEADER */}
+        <div className="text-center mb-24 md:mb-32">
            <motion.div
-             initial={{ opacity: 0, y: 20 }}
+             initial={{ opacity: 0, y: 10 }}
              whileInView={{ opacity: 1, y: 0 }}
              transition={{ duration: 0.6 }}
-             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] text-sm font-semibold mb-6"
+             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1E1E24] border border-[#8B5CF6]/20 text-[#A78BFA] text-xs font-semibold tracking-wider mb-6"
            >
-             <MdSecurity /> Secured by Blockchain
+             <FaCheckCircle size={12} /> PROTOCOL WORKFLOW
            </motion.div>
            
            <motion.h2 
              initial={{ opacity: 0, y: 20 }}
              whileInView={{ opacity: 1, y: 0 }}
              transition={{ duration: 0.6, delay: 0.1 }}
-             className="text-4xl md:text-6xl font-bold text-white mb-6"
+             className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight"
            >
-             How It <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#10B981] to-[#22D3EE]">Works</span>
+             Three Steps to <br />
+             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8B5CF6] via-[#A78BFA] to-[#C4B5FD]">
+               Digital Wealth
+             </span>
            </motion.h2>
            
            <motion.p 
              initial={{ opacity: 0, y: 20 }}
              whileInView={{ opacity: 1, y: 0 }}
              transition={{ duration: 0.6, delay: 0.2 }}
-             className="text-gray-400 max-w-2xl mx-auto text-lg"
+             className="text-[#9CA3AF] max-w-xl mx-auto text-lg leading-relaxed font-light"
            >
-             From wallet connection to instant rewards. Experience the fastest AI-powered DeFi ecosystem.
+             A simplified, high-performance workflow designed for speed. 
+             No complex onboarding, just connect and capitalize.
            </motion.p>
         </div>
 
-        {/* The Connector Line */}
-        <TimelineConnector scrollYProgress={scrollYProgress} />
-
-        {/* Steps */}
+        {/* TIMELINE CONTAINER */}
         <div className="relative">
           {steps.map((step, index) => (
-            <WorkflowStep 
+            <TimelineStep 
               key={index}
               index={index}
               {...step}
             />
           ))}
         </div>
-
-        {/* Final CTA */}
-        <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            className="text-center mt-12 relative z-10"
-        >
-            <div className="inline-block p-[1px] rounded-full bg-gradient-to-r from-[#10B981] via-white to-[#8B5CF6]">
-                <button className="px-10 py-4 rounded-full bg-[#050505] text-white font-bold text-lg hover:bg-white/10 transition-colors flex items-center gap-3">
-                   <FaRocket className="text-[#F59E0B]" /> Launch App Now
-                </button>
-            </div>
-        </motion.div>
 
       </div>
     </section>
