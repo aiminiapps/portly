@@ -2,10 +2,24 @@
 
 import React, { Suspense, useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { MeshDistortMaterial, Sphere, OrbitControls, Float, Stars } from "@react-three/drei";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { FaRocket, FaBook, FaWallet, FaBars, FaTimes, FaShieldAlt, FaChartPie, FaBolt } from "react-icons/fa";
-import { HiSparkles, HiTrendingUp } from "react-icons/hi";
+import { MeshDistortMaterial, Sphere, OrbitControls, Float, Stars, Environment } from "@react-three/drei";
+import { motion, AnimatePresence } from "framer-motion";
+
+// --- REPLACED LUCIDE WITH PREMIUM REACT-ICONS (REMIX ICONS) ---
+import { 
+  RiRocket2Line, 
+  RiBook3Line, 
+  RiMenu3Line, 
+  RiCloseLine, 
+  RiShieldCheckLine, 
+  RiPieChart2Line, 
+  RiFlashlightFill, // Filled version for strong logo branding
+  RiSparklingFill, 
+  RiArrowRightUpLine, // Cleaner "Trending" look for crypto
+  RiArrowRightLine,
+  RiPulseLine,
+  RiGlobalLine
+} from "react-icons/ri";
 
 // --- THEME CONSTANTS ---
 const COLORS = {
@@ -28,52 +42,52 @@ const LiquidCore = () => {
   
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
-    // Subtle breathing animation
     if(meshRef.current) {
-      meshRef.current.distort = 0.4 + Math.sin(t * 0.5) * 0.15;
+      meshRef.current.distort = 0.35 + Math.sin(t * 0.4) * 0.12; 
     }
   });
 
   return (
-    <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.5}>
-      <Sphere ref={meshRef} args={[1, 256, 256]} scale={2.4}>
+    <Float speed={1.5} rotationIntensity={0.4} floatIntensity={0.6}>
+      <Sphere ref={meshRef} args={[1, 256, 256]} scale={1.6}>
         <MeshDistortMaterial
-          color={COLORS.dark}
+          color="#11052C" 
           emissive={COLORS.primary}
-          emissiveIntensity={0.2}
-          roughness={0.1}
-          metalness={0.9} // High metalness for luxury look
+          emissiveIntensity={0.2} 
+          roughness={0.15} 
+          metalness={0.95} 
           distort={0.4}
           speed={1.5}
-          envMapIntensity={1}
+          reflectivity={1}
           clearcoat={1}
-          clearcoatRoughness={0}
+          clearcoatRoughness={0.1}
+          envMapIntensity={1.2} 
         />
       </Sphere>
     </Float>
   );
 };
 
-// 2. Background Particles (The "Net")
+// 2. Background Particles
 const DataNet = () => {
   const groupRef = useRef();
   
   useFrame((state) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.05;
+      groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.02;
     }
   });
 
   return (
-    <group ref={groupRef} rotation={[0, 0, Math.PI / 6]}>
+    <group ref={groupRef} rotation={[0, 0, Math.PI / 8]}>
       <Stars 
-        radius={50} 
+        radius={70} 
         depth={50} 
-        count={3000} 
+        count={2500} 
         factor={4} 
         saturation={0} 
         fade 
-        speed={1} 
+        speed={0.5} 
       />
     </group>
   );
@@ -81,7 +95,7 @@ const DataNet = () => {
 
 // --- UI COMPONENTS ---
 
-// 1. Navbar Component (Integrated for full Hero UX)
+// 1. Navbar Component
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -95,47 +109,97 @@ const Navbar = () => {
   const navLinks = ["Ecosystem", "Features", "Governance", "Docs"];
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.8, ease: "circOut" }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "py-4 bg-[#0A0A0B]/80 backdrop-blur-xl border-b border-white/5" : "py-6 bg-transparent"
-      }`}
-    >
-      <div className="container mx-auto px-6 flex items-center justify-between">
-        {/* Logo */}
-        <div className="flex items-center gap-2 cursor-pointer group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#0A0A0B] flex items-center justify-center border border-white/10 group-hover:border-[#A78BFA]/50 transition-colors">
-            <FaBolt className="text-white text-lg" />
+    <>
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.8, ease: "circOut" }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled || mobileMenuOpen ? "py-4 bg-[#0A0A0B]/80 backdrop-blur-xl border-b border-white/5 shadow-lg" : "py-6 bg-transparent"
+        }`}
+      >
+        <div className="container mx-auto px-6 flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center gap-2 cursor-pointer z-50 relative group">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#0A0A0B] flex items-center justify-center border border-white/10 group-hover:border-[#A78BFA]/50 transition-all shadow-[0_0_15px_-3px_rgba(139,92,246,0.3)] group-hover:shadow-[0_0_20px_0px_rgba(139,92,246,0.5)]">
+              {/* Premium Icon: Flashlight Fill */}
+              <RiFlashlightFill className="text-white w-5 h-5" />
+            </div>
+            <span className="text-xl font-bold text-white tracking-wide">PORTLY<span className="text-[#A78BFA]">.AI</span></span>
           </div>
-          <span className="text-xl font-bold text-white tracking-wide">PORTLY<span className="text-[#A78BFA]">.AI</span></span>
-        </div>
 
-        {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-8 bg-white/5 px-8 py-3 rounded-full border border-white/5 backdrop-blur-sm">
-          {navLinks.map((link) => (
-            <a key={link} href={`#${link.toLowerCase()}`} className="text-sm font-medium text-[#9CA3AF] hover:text-white transition-colors relative group">
-              {link}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#A78BFA] transition-all group-hover:w-full" />
-            </a>
-          ))}
-        </div>
+          {/* Desktop Links */}
+          <div className="hidden md:flex items-center gap-8 bg-white/5 px-8 py-3 rounded-full border border-white/5 backdrop-blur-sm shadow-inner hover:border-white/10 transition-colors">
+            {navLinks.map((link) => (
+              <a key={link} href={`#${link.toLowerCase()}`} className="text-sm font-medium text-[#9CA3AF] hover:text-white transition-colors relative group">
+                {link}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#A78BFA] transition-all duration-300 group-hover:w-full opacity-0 group-hover:opacity-100" />
+              </a>
+            ))}
+          </div>
 
-        {/* Action & Mobile Toggle */}
-        <div className="flex items-center gap-4">
-          <button className="hidden md:flex px-5 py-2.5 rounded-lg bg-[#1E1E24] hover:bg-[#2A2A35] border border-white/10 text-white text-sm font-medium transition-all hover:scale-105 active:scale-95">
-            Connect Wallet
-          </button>
-          <button 
-            className="md:hidden text-white text-xl"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          {/* Action & Mobile Toggle */}
+          <div className="flex items-center gap-4 z-50 relative">
+            <button className="hidden md:flex px-6 py-2.5 rounded-lg bg-[#1E1E24] hover:bg-[#2A2A35] border border-white/10 text-white text-sm font-semibold transition-all hover:scale-105 active:scale-95 hover:shadow-[0_0_20px_-5px_rgba(139,92,246,0.3)]">
+              Connect Wallet
+            </button>
+            <button 
+              className="md:hidden text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {/* Premium Icons: Menu3 and Close */}
+              {mobileMenuOpen ? <RiCloseLine className="w-6 h-6" /> : <RiMenu3Line className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
+      </motion.nav>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-40 bg-[#0A0A0B]/95 backdrop-blur-3xl flex flex-col items-center justify-center md:hidden"
           >
-            {mobileMenuOpen ? <FaTimes /> : <FaBars />}
-          </button>
-        </div>
-      </div>
-    </motion.nav>
+            <div className="flex flex-col items-center gap-6 w-full px-8">
+              {navLinks.map((link, i) => (
+                <motion.a
+                  key={link}
+                  href={`#${link.toLowerCase()}`}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + i * 0.1, type: "spring", stiffness: 100 }}
+                  className="text-3xl font-bold text-white/70 hover:text-white hover:tracking-wide transition-all cursor-pointer"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link}
+                </motion.a>
+              ))}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="w-full max-w-xs h-[1px] bg-white/10 my-4" 
+              />
+              <motion.button
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="w-full max-w-xs py-4 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] text-white font-bold text-lg shadow-lg hover:shadow-purple-500/30 transition-shadow"
+              >
+                Connect Wallet
+              </motion.button>
+            </div>
+            
+            <div className="absolute top-1/4 left-0 w-64 h-64 bg-[#8B5CF6]/10 blur-[100px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-1/4 right-0 w-64 h-64 bg-[#7C3AED]/10 blur-[100px] rounded-full pointer-events-none" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
@@ -146,44 +210,41 @@ const ScannerWidget = ({ delay }) => {
       initial={{ opacity: 0, x: -50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 1, delay }}
-      className="absolute left-[5%] lg:left-[12%] top-[30%] hidden xl:flex flex-col w-64 p-4 rounded-2xl
-                 bg-[#121214]/80 backdrop-blur-xl border border-[#C4B5FD]/10 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)]
-                 z-10 group hover:border-[#8B5CF6]/30 transition-all duration-300"
+      className="absolute left-[5%] lg:left-[8%] top-[30%] hidden xl:flex flex-col w-64 p-5 rounded-2xl
+                 bg-[#121214]/70 backdrop-blur-xl border border-white/5 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.8)]
+                 z-10 group hover:border-[#8B5CF6]/40 transition-all duration-300"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-[#1E1E24] text-[#A78BFA]"><FaShieldAlt /></div>
-          <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">Risk Scanner</span>
+          {/* Premium Icon: Shield Check */}
+          <div className="p-1.5 rounded-lg bg-[#1E1E24] text-[#A78BFA] shadow-inner"><RiShieldCheckLine className="w-4 h-4" /></div>
+          <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">AI Audit</span>
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 items-center bg-[#10B981]/10 px-2 py-0.5 rounded-full border border-[#10B981]/20">
           <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-          <span className="text-[10px] text-[#10B981] font-mono">LIVE</span>
+          <span className="text-[10px] text-[#10B981] font-mono font-bold">LIVE</span>
         </div>
       </div>
       
       {/* Fake Scanning Animation */}
-      <div className="relative h-24 bg-[#0A0A0B] rounded-lg border border-white/5 overflow-hidden mb-3">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#8B5CF6] to-transparent opacity-70 animate-[scan_2s_ease-in-out_infinite]" />
-        <div className="p-3 grid grid-cols-2 gap-2">
-           <div className="h-2 bg-white/10 rounded w-full mb-1" />
-           <div className="h-2 bg-white/5 rounded w-2/3" />
-           <div className="h-2 bg-white/5 rounded w-1/2" />
-           <div className="h-2 bg-white/10 rounded w-full" />
+      <div className="relative h-20 bg-[#0A0A0B]/80 rounded-lg border border-white/5 overflow-hidden mb-3 shadow-inner">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#8B5CF6] to-transparent opacity-70 animate-[scan_2s_ease-in-out_infinite] shadow-[0_0_10px_#8B5CF6]" />
+        <div className="p-3 grid grid-cols-2 gap-2 opacity-50">
+           <div className="h-1.5 bg-white/10 rounded-full w-full mb-1" />
+           <div className="h-1.5 bg-white/5 rounded-full w-2/3" />
+           <div className="h-1.5 bg-white/5 rounded-full w-1/2" />
+           <div className="h-1.5 bg-white/10 rounded-full w-full" />
         </div>
       </div>
 
       <div className="flex justify-between items-end">
         <div>
-          <div className="text-[10px] text-gray-500 mb-1">Portfolio Audit</div>
-          <div className="text-lg font-bold text-white">98/100</div>
+          <div className="text-[10px] text-gray-500 mb-1 font-medium">Safety Score</div>
+          <div className="text-xl font-bold text-white tracking-tight">9.8<span className="text-sm text-gray-500 font-normal">/10</span></div>
         </div>
-        <div className="px-2 py-1 rounded bg-[#10B981]/10 text-[#10B981] text-xs font-medium border border-[#10B981]/20">
-          Safe
-        </div>
+        {/* Premium Icon: Pulse */}
+        <RiPulseLine className="text-[#10B981] w-5 h-5 opacity-80" />
       </div>
-      
-      {/* Decorative Glow */}
-      <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-b from-[#8B5CF6]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
     </motion.div>
   );
 };
@@ -195,41 +256,35 @@ const AssetWidget = ({ delay }) => {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 1, delay }}
-      className="absolute right-[5%] lg:right-[12%] bottom-[25%] hidden xl:flex flex-col w-72 p-5 rounded-2xl
-                 bg-[#121214]/80 backdrop-blur-xl border border-[#C4B5FD]/10 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)]
-                 z-10 group hover:-translate-y-1 transition-transform duration-300"
+      className="absolute right-[5%] lg:right-[8%] bottom-[20%] hidden xl:flex flex-col w-72 p-5 rounded-2xl
+                 bg-[#121214]/70 backdrop-blur-xl border border-white/5 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.8)]
+                 z-10 group hover:-translate-y-2 transition-transform duration-500 ease-out"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-[#1E1E24] text-[#F59E0B]"><FaChartPie /></div>
-          <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">Asset Allocation</span>
+          {/* Premium Icon: Pie Chart 2 */}
+          <div className="p-1.5 rounded-lg bg-[#1E1E24] text-[#F59E0B] shadow-inner"><RiPieChart2Line className="w-4 h-4" /></div>
+          <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">Portfolio</span>
         </div>
+        {/* Premium Icon: Global */}
+        <RiGlobalLine className="text-gray-500 w-4 h-4 opacity-50" />
       </div>
 
       <div className="flex items-center gap-4 mb-4">
-        <div className="relative w-16 h-16 rounded-full border-4 border-[#1E1E24] flex items-center justify-center">
+        <div className="relative w-14 h-14 rounded-full border-4 border-[#1E1E24] flex items-center justify-center shadow-lg">
              <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 36 36">
-                {/* Donut Chart Segment */}
                 <path className="text-[#1E1E24]" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
-                <path className="text-[#8B5CF6]" strokeDasharray="70, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
+                <path className="text-[#8B5CF6]" strokeDasharray="70, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
              </svg>
              <span className="text-[10px] font-bold text-white">70%</span>
         </div>
         <div>
-          <div className="text-xl font-bold text-white">$42,890.50</div>
-          <div className="flex items-center gap-1 text-[#10B981] text-xs">
-            <HiTrendingUp /> +12.5% (24h)
+          <div className="text-xl font-bold text-white tracking-tight">$42,890</div>
+          <div className="flex items-center gap-1 text-[#10B981] text-xs font-medium">
+            {/* Premium Icon: Arrow Right Up (Cleaner than trending zigzag) */}
+            <RiArrowRightUpLine className="w-3 h-3" /> +12.5%
           </div>
         </div>
-      </div>
-
-      <div className="w-full h-1 bg-[#1E1E24] rounded-full overflow-hidden">
-        <motion.div 
-          initial={{ width: 0 }}
-          animate={{ width: "70%" }}
-          transition={{ duration: 1.5, delay: delay + 0.5 }}
-          className="h-full bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA]" 
-        />
       </div>
     </motion.div>
   );
@@ -242,28 +297,27 @@ const LuxuryButton = ({ text, icon: Icon, primary = false, href = "#" }) => {
       href={href}
       whileHover={{ scale: 1.02, translateY: -2 }}
       whileTap={{ scale: 0.98, translateY: 1 }}
-      className={`relative group px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-3 overflow-hidden transition-all duration-300 isolate
+      className={`relative group px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-3 overflow-hidden transition-all duration-300 isolate
         ${primary 
-          ? "text-white shadow-[0_0_40px_-10px_rgba(139,92,246,0.5)]" 
-          : "text-white bg-[#1E1E24]/50 border border-white/10 hover:bg-[#1E1E24]"
+          ? "text-white shadow-[0_10px_40px_-10px_rgba(139,92,246,0.6)]" 
+          : "text-white bg-[#1E1E24]/60 border border-white/10 hover:bg-[#1E1E24] hover:border-white/30"
         }
       `}
     >
       {primary && (
         <>
           <div className="absolute inset-0 bg-gradient-to-b from-[#8B5CF6] to-[#6D28D9] z-[-1]" />
-          {/* Top highlight for 3D depth */}
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/40" />
-          {/* Bottom shadow */}
-          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-black/20" />
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-black/30" />
           
-          {/* Inner Glow Hover */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-transparent via-white/10 to-transparent transition-opacity duration-500 transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%]" />
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-transparent via-white/20 to-transparent transition-opacity duration-500 transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%]" />
         </>
       )}
       
-      <Icon className={`text-xl ${primary ? 'text-white' : 'text-[#A78BFA]'} transition-colors`} />
+      <Icon className={`text-xl w-5 h-5 ${primary ? 'text-white' : 'text-[#A78BFA]'} transition-colors`} />
       <span>{text}</span>
+      {/* Premium Icon: Arrow Right */}
+      {primary && <RiArrowRightLine className="w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform" />}
     </motion.a>
   );
 };
@@ -274,27 +328,31 @@ export default function Hero() {
   return (
     <main className="relative w-full min-h-screen bg-[#0A0A0B] overflow-hidden selection:bg-[#8B5CF6] selection:text-white">
       
+      {/* Noise Overlay */}
+      <div className="absolute inset-0 z-[1] opacity-[0.03] pointer-events-none mix-blend-overlay" 
+           style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} 
+      />
+
       <Navbar />
 
-      {/* 1. The Immersive 3D Background */}
+      {/* 1. Immersive 3D Background */}
       <div className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [0, 0, 6], fov: 45 }} gl={{ antialias: true, alpha: true }}>
+        <Canvas camera={{ position: [0, 0, 6], fov: 40 }} gl={{ antialias: true, alpha: true }}>
           <Suspense fallback={null}>
-            <ambientLight intensity={0.4} />
-            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} color="#C4B5FD" />
-            <pointLight position={[-10, -10, -10]} intensity={1} color="#7C3AED" />
+            <Environment preset="city" />
+            <ambientLight intensity={0.2} />
+            <spotLight position={[10, 10, 10]} angle={0.5} penumbra={1} intensity={2} color="#C4B5FD" />
+            <pointLight position={[-10, -5, -10]} intensity={1} color="#7C3AED" />
             
             <LiquidCore />
             <DataNet />
             
-            {/* Environment for shiny reflections */}
-            <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} maxPolarAngle={Math.PI/1.8} minPolarAngle={Math.PI/2.2} />
+            <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.8} maxPolarAngle={Math.PI/1.8} minPolarAngle={Math.PI/2.2} />
           </Suspense>
         </Canvas>
         
-        {/* Cinematic Fog Overlay */}
-        <div className="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-[#0A0A0B] to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-radial from-transparent via-[#0A0A0B]/20 to-[#0A0A0B] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#0A0A0B] to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-radial from-transparent via-[#0A0A0B]/30 to-[#0A0A0B] pointer-events-none" />
       </div>
 
       {/* 2. Floating UX Elements */}
@@ -309,36 +367,35 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-[#1E1E24]/80 border border-[#8B5CF6]/30 backdrop-blur-md shadow-lg shadow-[#8B5CF6]/10"
+          className="inline-flex items-center gap-2 px-5 py-2 mb-8 rounded-full bg-[#1E1E24]/60 border border-[#8B5CF6]/30 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(139,92,246,0.2)] hover:border-[#8B5CF6]/50 transition-colors cursor-default"
         >
-          <HiSparkles className="text-[#A78BFA]" />
-          <span className="text-xs font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-[#C4B5FD] uppercase">
-            AI-Powered Wealth Intelligence
+          {/* Premium Icon: Sparkling Fill */}
+          <RiSparklingFill className="text-[#A78BFA] w-3 h-3" />
+          <span className="text-xs font-bold tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-white to-[#C4B5FD] uppercase">
+            Intelligent Wealth
           </span>
         </motion.div>
 
-        {/* Hero Heading */}
         <motion.h1 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
-          className="max-w-5xl text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight mb-8 leading-[1.1]"
+          className="max-w-4xl text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight mb-8 leading-[1.05]"
         >
-          Transform Data into <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#A78BFA] via-[#8B5CF6] to-[#7C3AED] filter drop-shadow-lg">
-            Actionable Wealth.
+          Master Your <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#A78BFA] via-[#8B5CF6] to-[#6D28D9] filter drop-shadow-lg">
+            Digital Wealth.
           </span>
         </motion.h1>
 
-        {/* Hero Subtitle */}
         <motion.p 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="max-w-2xl text-lg md:text-xl text-[#9CA3AF] mb-10 leading-relaxed font-light"
+          className="max-w-xl text-lg md:text-xl text-[#9CA3AF] mb-12 leading-relaxed font-light"
         >
-          Portly connects your wallets across chains to provide instant risk analysis, 
-          diversification scores, and predictive market insights—all in one cinematic interface.
+          The all-in-one command center for crypto. 
+          Real-time insights, automated risk analysis, and effortless portfolio tracking.
         </motion.p>
 
         {/* CTA Group */}
@@ -348,26 +405,14 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="flex flex-col sm:flex-row items-center gap-5"
         >
-          <LuxuryButton text="Launch Dashboard" icon={FaRocket} primary={true} />
-          <LuxuryButton text="Read Documentation" icon={FaBook} />
+          {/* Premium Icons: Rocket2 and Book3 */}
+          <LuxuryButton text="Launch App" icon={RiRocket2Line} primary={true} />
+          <LuxuryButton text="Documentation" icon={RiBook3Line} />
         </motion.div>
 
-        {/* Social Proof / Trusted By (Bottom Footer of Hero) */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1.5 }}
-          className="absolute bottom-10 left-0 right-0 flex justify-center gap-8 opacity-50 grayscale mix-blend-screen"
-        >
-           {/* Placeholders for partner logos (Text for now to keep it single file) */}
-           <span className="font-bold text-white/40 tracking-widest text-sm">ETHEREUM</span>
-           <span className="font-bold text-white/40 tracking-widest text-sm">POLYGON</span>
-           <span className="font-bold text-white/40 tracking-widest text-sm">BINANCE</span>
-           <span className="font-bold text-white/40 tracking-widest text-sm">CHAINLINK</span>
-        </motion.div>
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#0A0A0B] to-transparent pointer-events-none" />
       </div>
       
-      {/* Global CSS for custom animations (Scanning line) */}
       <style jsx global>{`
         @keyframes scan {
           0%, 100% { top: 0%; opacity: 0; }
