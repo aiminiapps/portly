@@ -89,42 +89,36 @@ const ConnectedNodes = () => {
     useFrame((state) => {
         const t = state.clock.getElapsedTime();
         if (group.current) {
-            group.current.rotation.y = t * 0.2; // Constant orbit
+            group.current.rotation.z = t * 0.1;
+            group.current.rotation.y = Math.sin(t * 0.2) * 0.2;
         }
     });
-
-    const chains = [
-        { color: "#627EEA", pos: [1.8, 0, 0] }, // ETH
-        { color: "#14F195", pos: [-1.5, 0.8, 0.8] }, // SOL
-        { color: "#8247E5", pos: [-0.5, -1, 1.2] }, // POLY
-    ];
 
     return (
         <group ref={group}>
             {/* Central Hub */}
-            <Sphere args={[0.5, 32, 32]}>
-                <meshStandardMaterial color="#FFFFFF" emissive="#FFFFFF" emissiveIntensity={2} toneMapped={false} />
+            <Sphere args={[0.8, 32, 32]}>
+                <MeshDistortMaterial color="#7C3AED" speed={2} distort={0.4} roughness={0.2} metalness={0.8} />
             </Sphere>
-            <pointLight distance={5} intensity={4} color="white" />
             
-            {/* Orbiting Nodes & Beams */}
-            {chains.map((chain, i) => (
-                <group key={i} position={chain.pos}>
-                    <Float speed={4} rotationIntensity={1} floatIntensity={1}>
-                        <mesh>
-                            <icosahedronGeometry args={[0.25, 0]} />
-                            <meshStandardMaterial color={chain.color} emissive={chain.color} emissiveIntensity={1.5} />
+            {/* Orbiting Nodes */}
+            {[...Array(4)].map((_, i) => {
+                const angle = (i / 4) * Math.PI * 2;
+                const radius = 2.2;
+                return (
+                    <group key={i} rotation={[0, 0, angle]}>
+                        <mesh position={[radius, 0, 0]}>
+                            <sphereGeometry args={[0.2, 16, 16]} />
+                            <meshStandardMaterial color="#A78BFA" emissive="#8B5CF6" emissiveIntensity={0.5} />
                         </mesh>
-                    </Float>
-                    {/* Energy Beam to Center */}
-                    <mesh position={[chain.pos[0] * -0.5, chain.pos[1] * -0.5, chain.pos[2] * -0.5]} 
-                          rotation={[0, 0, Math.PI / 2]} // Simplified rotation logic for demo
-                    >
-                         <cylinderGeometry args={[0.01, 0.01, 3, 4]} />
-                         <meshBasicMaterial color={chain.color} transparent opacity={0.3} blending={THREE.AdditiveBlending} />
-                    </mesh>
-                </group>
-            ))}
+                        {/* Connecting Line (Cylinder) */}
+                        <mesh position={[radius / 2, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+                            <cylinderGeometry args={[0.02, 0.02, radius, 8]} />
+                            <meshStandardMaterial color="#4C1D95" transparent opacity={0.5} />
+                        </mesh>
+                    </group>
+                );
+            })}
         </group>
     );
 };
