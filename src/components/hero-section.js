@@ -5,7 +5,6 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { MeshDistortMaterial, Sphere, OrbitControls, Float, Stars, Environment } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 
-// --- REPLACED LUCIDE WITH PREMIUM REACT-ICONS (REMIX ICONS) ---
 import { 
   RiRocket2Line, 
   RiBook3Line, 
@@ -13,9 +12,9 @@ import {
   RiCloseLine, 
   RiShieldCheckLine, 
   RiPieChart2Line, 
-  RiFlashlightFill, // Filled version for strong logo branding
+  RiFlashlightFill, 
   RiSparklingFill, 
-  RiArrowRightUpLine, // Cleaner "Trending" look for crypto
+  RiArrowRightUpLine,
   RiArrowRightLine,
   RiPulseLine,
   RiGlobalLine
