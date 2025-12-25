@@ -39,46 +39,100 @@ import { MdSecurity, MdSpeed, MdAutoGraph } from "react-icons/md";
 // ------------------------------------------------------------------
 const NeuralBrain = (props) => {
   const ref = useRef();
-  const [sphere] = useState(() => random.inSphere(new Float32Array(5000), { radius: 1.2 }));
+  const shellRef = useRef();
   
+  // 1. Denser, larger particle cloud for "Big Data" feel
+  const [sphere] = useState(() => random.inSphere(new Float32Array(8000), { radius: 1.8 }));
+
   useFrame((state, delta) => {
-    if(ref.current) {
-        ref.current.rotation.x -= delta / 15;
-        ref.current.rotation.y -= delta / 20;
+    const t = state.clock.getElapsedTime();
+
+    // Rotate the particle cloud slowly
+    if (ref.current) {
+      ref.current.rotation.x -= delta / 20;
+      ref.current.rotation.y -= delta / 25;
+    }
+
+    // Rotate the Cyber Shell in opposite direction
+    if (shellRef.current) {
+      shellRef.current.rotation.x += delta / 10;
+      shellRef.current.rotation.y += delta / 10;
     }
   });
 
   return (
-    <group rotation={[0, 0, Math.PI / 4]}>
-      {/* The Particle Cloud */}
-      <Points ref={ref} positions={sphere} stride={3} frustumCulled={false} {...props}>
+    <group rotation={[0, 0, Math.PI / 4]} {...props}>
+      
+      {/* --- LAYER 1: The Neural Cloud --- */}
+      <Points ref={ref} positions={sphere} stride={3} frustumCulled={false}>
         <PointMaterial
           transparent
           color="#A78BFA"
-          size={0.02}
+          size={0.015} // Fine dust
           sizeAttenuation={true}
           depthWrite={false}
-          opacity={0.6}
+          opacity={0.4}
           blending={THREE.AdditiveBlending}
         />
       </Points>
-      
-      {/* The Sentient Core */}
-      <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-        <Sphere args={[0.6, 64, 64]}>
+
+      {/* --- LAYER 2: The Sentient Core (Liquid Metal) --- */}
+      <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
+        <Sphere args={[0.7, 128, 128]}> {/* High poly for smooth distortion */}
             <MeshDistortMaterial 
-                color="#7C3AED" 
-                emissive="#4C1D95"
-                emissiveIntensity={1}
-                speed={3} 
-                distort={0.5} 
-                roughness={0.2} 
-                metalness={0.8} 
+                color="#2e1065"      // Deep, dark violet base
+                emissive="#7C3AED"   // Glowing purple inner
+                emissiveIntensity={0.8}
+                speed={2}            // Slow, organic movement
+                distort={0.4}        // Liquid bubble effect
+                roughness={0.1}      // Wet look
+                metalness={1.0}      // Chrome finish
+                clearcoat={1.0}      // Varnish layer
+                clearcoatRoughness={0.1}
             />
         </Sphere>
       </Float>
+
+      {/* --- LAYER 3: Cybernetic Wireframe Shell --- */}
+      <mesh ref={shellRef} scale={[1.1, 1.1, 1.1]}>
+        <icosahedronGeometry args={[1, 2]} />
+        <meshStandardMaterial 
+            color="#8B5CF6" 
+            wireframe 
+            transparent 
+            opacity={0.1} 
+            side={THREE.DoubleSide}
+        />
+      </mesh>
+
+      {/* --- LAYER 4: Orbiting Synapses (Data Nodes) --- */}
+      <OrbitingSynapse radius={1.4} speed={1} color="#38bdf8" offset={0} /> {/* Blue Node */}
+      <OrbitingSynapse radius={1.6} speed={-0.8} color="#f472b6" offset={2} /> {/* Pink Node */}
+
     </group>
   );
+};
+
+// Helper: Small glowing orbs orbiting the brain
+const OrbitingSynapse = ({ radius, speed, color, offset }) => {
+    const ref = useRef();
+    
+    useFrame(({ clock }) => {
+        const t = clock.getElapsedTime() * speed + offset;
+        // Orbital Math
+        ref.current.position.x = Math.sin(t) * radius;
+        ref.current.position.z = Math.cos(t) * radius;
+        ref.current.position.y = Math.sin(t * 0.5) * (radius * 0.5); // Wobbly orbit
+    });
+
+    return (
+        <mesh ref={ref}>
+            <sphereGeometry args={[0.08, 16, 16]} />
+            <meshBasicMaterial color={color} />
+            {/* Glow Halo */}
+            <pointLight color={color} distance={1} intensity={2} />
+        </mesh>
+    );
 };
 
 // ------------------------------------------------------------------
