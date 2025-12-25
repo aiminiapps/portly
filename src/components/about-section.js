@@ -270,7 +270,6 @@ export default function AboutSection() {
       {/* Background Ambience */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
           <div className="absolute top-[-20%] left-[20%] w-[800px] h-[800px] bg-[#7C3AED]/5 blur-[120px] rounded-full mix-blend-screen" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-[#22D3EE]/5 blur-[120px] rounded-full mix-blend-screen" />
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">

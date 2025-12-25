@@ -287,14 +287,8 @@ export default function HowItWorksSection() {
   ];
 
   return (
-    <section ref={containerRef} className="relative w-full py-24 md:py-32 bg-[#0A0A0B] overflow-hidden">
-       
-       {/* Cinematic Background */}
-       {/* <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" /> */}
-       {/* <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#0A0A0B] to-transparent z-10" /> */}
-       {/* <div className="absolute top-1/3 left-0 w-[500px] h-[500px] bg-[#7C3AED]/10 blur-[120px] rounded-full pointer-events-none" /> */}
+    <section ref={containerRef} className="relative w-full py-24 md:py-32 bg-[#050505] overflow-hidden">
        <div className="absolute bottom-1/3 right-0 w-[500px] h-[500px] bg-[#A78BFA]/5 blur-[120px] rounded-full pointer-events-none" />
-
        <div className="max-w-7xl mx-auto px-6 relative z-10">
           
           {/* Header */}
