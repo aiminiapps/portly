@@ -20,6 +20,7 @@ import {
   RiGlobalLine
 } from "react-icons/ri";
 import Image from "next/image";
+import Link from "next/link";
 
 // --- THEME CONSTANTS ---
 const COLORS = {
@@ -136,9 +137,11 @@ const Navbar = () => {
 
           {/* Action & Mobile Toggle */}
           <div className="flex items-center gap-4 z-50 relative">
-            <button className="hidden md:flex px-6 py-2.5 rounded-lg bg-[#1E1E24] hover:bg-[#2A2A35] border border-white/10 text-white text-sm font-semibold transition-all hover:scale-105 active:scale-95 hover:shadow-[0_0_20px_-5px_rgba(139,92,246,0.3)]">
+           <Link href='/ai'>
+           <button className="hidden md:flex px-6 py-2.5 rounded-lg bg-[#1E1E24] hover:bg-[#2A2A35] border border-white/10 text-white text-sm font-semibold transition-all hover:scale-105 active:scale-95 hover:shadow-[0_0_20px_-5px_rgba(139,92,246,0.3)]">
               Connect Wallet
             </button>
+           </Link>
             <button 
               className="md:hidden text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -180,14 +183,16 @@ const Navbar = () => {
                 transition={{ delay: 0.5 }}
                 className="w-full max-w-xs h-[1px] bg-white/10 my-4" 
               />
-              <motion.button
+             <Link href='/ai'>
+             <motion.button
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="w-full max-w-xs py-4 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] text-white font-bold text-lg shadow-lg hover:shadow-purple-500/30 transition-shadow"
+                className="w-full px-8 max-w-xs py-4 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] text-white font-bold text-lg shadow-lg hover:shadow-purple-500/30 transition-shadow"
               >
                 Connect Wallet
               </motion.button>
+              </Link>
             </div>
             
             <div className="absolute top-1/4 left-0 w-64 h-64 bg-[#8B5CF6]/10 blur-[100px] rounded-full pointer-events-none" />
