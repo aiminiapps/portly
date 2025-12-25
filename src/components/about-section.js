@@ -17,7 +17,7 @@ import {
   Plane
 } from "@react-three/drei";
 import * as THREE from "three";
-import { Edges, Text } from '@react-three/drei';
+import { Edges, Text, Box, Line, useTexture, Billboard } from '@react-three/drei';
 import * as random from "maath/random/dist/maath-random.esm";
 
 // --- STRICTLY REQUESTED REACT-ICONS ---
@@ -138,45 +138,144 @@ const OrbitingSynapse = ({ radius, speed, color, offset }) => {
 // ------------------------------------------------------------------
 // 3D SCENE 2: FLOATING CONNECTED NODES (Multi-Chain Reactor)
 // ------------------------------------------------------------------
-const ConnectedNodes = () => {
-    const group = useRef();
-    
-    useFrame((state) => {
-        const t = state.clock.getElapsedTime();
-        if (group.current) {
-            group.current.rotation.z = t * 0.1;
-            group.current.rotation.y = Math.sin(t * 0.2) * 0.2;
-        }
-    });
-
-    return (
-        <group ref={group}>
-            {/* Central Hub */}
-            <Sphere args={[0.8, 32, 32]}>
-                <MeshDistortMaterial color="#7C3AED" speed={2} distort={0.4} roughness={0.2} metalness={0.8} />
-            </Sphere>
-            
-            {/* Orbiting Nodes */}
-            {[...Array(4)].map((_, i) => {
-                const angle = (i / 4) * Math.PI * 2;
-                const radius = 2.2;
-                return (
-                    <group key={i} rotation={[0, 0, angle]}>
-                        <mesh position={[radius, 0, 0]}>
-                            <sphereGeometry args={[0.2, 16, 16]} />
-                            <meshStandardMaterial color="#A78BFA" emissive="#8B5CF6" emissiveIntensity={0.5} />
-                        </mesh>
-                        {/* Connecting Line (Cylinder) */}
-                        <mesh position={[radius / 2, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-                            <cylinderGeometry args={[0.02, 0.02, radius, 8]} />
-                            <meshStandardMaterial color="#4C1D95" transparent opacity={0.5} />
-                        </mesh>
-                    </group>
-                );
-            })}
-        </group>
-    );
-};
+const CHAINS = [
+    { name: 'BNB', color: '#F0B90B', url: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/info/logo.png' },
+    { name: 'ETH', color: '#627EEA', url: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png' },
+    { name: 'SOL', color: '#14F195', url: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png' },
+    { name: 'MATIC', color: '#8247E5', url: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/info/logo.png' },
+  ];
+  
+  const ChainNode = ({ data, index, total }) => {
+      // Load texture for this specific chain
+      const texture = useTexture(data.url);
+      
+      // Calculate Position in a circle
+      const angle = (index / total) * Math.PI * 2;
+      const radius = 2.4;
+      const x = Math.cos(angle) * radius;
+      const z = Math.sin(angle) * radius; // On XZ plane
+  
+      return (
+          <group position={[x, 0, z]}>
+              {/* 1. The Icon Billboard (Always faces camera) */}
+              <Billboard follow={true} lockX={false} lockY={false} lockZ={false}>
+                  <mesh>
+                      <circleGeometry args={[0.35, 32]} />
+                      <meshBasicMaterial map={texture} transparent />
+                  </mesh>
+                  {/* Glow Halo behind the icon */}
+                  <mesh position={[0, 0, -0.05]}>
+                      <circleGeometry args={[0.38, 32]} />
+                      <meshBasicMaterial color={data.color} transparent opacity={0.5} />
+                  </mesh>
+              </Billboard>
+  
+              {/* 2. Label Text */}
+              <Billboard position={[0, -0.5, 0]}>
+                  <Text fontSize={0.2} color="white" font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff">
+                      {data.name}
+                  </Text>
+              </Billboard>
+  
+              {/* 3. Connecting Pipe to Center (The Network Mesh) */}
+              <mesh 
+                  // Position is halfway between this node (0,0,0 relative) and center (-x, 0, -z)
+                  position={[-x/2, 0, -z/2]} 
+                  rotation={[0, -angle, Math.PI / 2]}
+              >
+                  <cylinderGeometry args={[0.03, 0.03, radius, 8]} />
+                  <meshStandardMaterial 
+                      color="#8B5CF6" // Portly Purple connection
+                      emissive="#4C1D95"
+                      transparent 
+                      opacity={0.4} 
+                  />
+              </mesh>
+  
+              {/* 4. Moving Data Particle (Visualizing "Working Together") */}
+              <DataPulse radius={radius} angle={angle} color={data.color} />
+          </group>
+      );
+  };
+  
+  // Helper: A small particle traveling from the chain to the center
+  const DataPulse = ({ radius, angle, color }) => {
+      const ref = useRef();
+      useFrame(({ clock }) => {
+          const t = (clock.getElapsedTime() * 0.8) % 1; // Speed 0.8
+          // Move from outer radius (0) to center (-radius)
+          // We are inside the group, so local 0 is the node. Center is -x, -z
+          // Simple linear interpolation for the visual effect along the connection line
+          if(ref.current) {
+               // We just slide it along the negative X axis relative to the group rotation? 
+               // Actually easier to just interpolate world positions, but for simplicity:
+               // Let's just animate strictly along the pipe path we built.
+               // The pipe is rotated, so we move locally along X? No, let's use the parent's math.
+               
+               // Re-calculating local movement towards [0,0,0] world (which is [-x, 0, -z] local)
+               const dist = t * radius;
+               ref.current.position.x = -Math.cos(0) * dist; // Move inwards
+               ref.current.position.z = -Math.sin(0) * dist; // (Relative to the rotated group parent, this simplifies to just moving towards center)
+               
+               // Pulse opacity
+               ref.current.material.opacity = 1 - t; // Fade out as it hits the core
+          }
+      });
+  
+      // We need to counteract the parent group's position to move towards world center.
+      // Actually, simpler math: The pipe is drawn from Node -> Center. 
+      // We just move a sphere from (0,0,0) to (-x, 0, -z).
+      const x = Math.cos(angle) * radius;
+      const z = Math.sin(angle) * radius;
+  
+      return (
+          <mesh ref={ref} position={[0,0,0]}> 
+              {/* We cheat slightly by positioning it absolutely relative to the node group but moving it towards world center */}
+              <sphereGeometry args={[0.06, 8, 8]} />
+              <meshBasicMaterial color={color} />
+          </mesh>
+      );
+  }
+  
+  
+  const ConnectedNodes = () => {
+      const group = useRef();
+      
+      useFrame((state) => {
+          const t = state.clock.getElapsedTime();
+          if (group.current) {
+              // Gentle rotation of the entire ecosystem
+              group.current.rotation.y = t * 0.15;
+              // Subtle tilt breathing
+              group.current.rotation.z = Math.sin(t * 0.3) * 0.05;
+          }
+      });
+  
+      return (
+          <group ref={group} rotation={[0.2, 0, 0]}>
+              {/* Central Hub: PORTLY AI Core */}
+              <Sphere args={[0.9, 64, 64]}>
+                  <MeshDistortMaterial 
+                      color="#6D28D9" 
+                      emissive="#4C1D95"
+                      emissiveIntensity={1}
+                      speed={2} 
+                      distort={0.3} 
+                      roughness={0.1} 
+                      metalness={0.9} 
+                  />
+              </Sphere>
+  
+              {/* Render Each Chain Node */}
+              {CHAINS.map((chain, i) => (
+                  <ChainNode key={chain.name} data={chain} index={i} total={CHAINS.length} />
+              ))}
+              
+              {/* Center Glow */}
+              <pointLight distance={3} intensity={2} color="#8B5CF6" />
+          </group>
+      );
+  };
 
 // ------------------------------------------------------------------
 // 3D SCENE 3: SPINNING GOLD TOKEN (Gamification)
