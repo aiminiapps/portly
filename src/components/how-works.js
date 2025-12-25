@@ -197,8 +197,6 @@ const TimelineStep = ({ index, title, description, CardComponent, icon: Icon, al
              className="w-12 h-12 rounded-full bg-[#0A0A0B] border border-[#8B5CF6] flex items-center justify-center shadow-[0_0_20px_-5px_#8B5CF6] relative"
           >
              <Icon className="text-[#A78BFA] text-lg" />
-             {/* Ring Pulse */}
-             <div className="absolute inset-0 rounded-full border border-[#8B5CF6] opacity-50 animate-ping" />
           </motion.div>
        </div>
 
@@ -240,14 +238,15 @@ const ContentText = ({ index, title, description, isInView }) => (
     initial={{ opacity: 0, x: 0, y: 20 }}
     animate={isInView ? { opacity: 1, x: 0, y: 0 } : { opacity: 0, x: 0, y: 20 }}
     transition={{ duration: 0.6, delay: 0.2 }}
+    className="sm:px-8"
   >
      <div className="inline-block px-3 py-1 rounded-full bg-[#1E1E24] border border-[#C4B5FD]/20 mb-4">
         <span className="text-xs font-bold text-[#A78BFA] tracking-wider font-mono">STEP 0{index + 1}</span>
      </div>
-     <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">
+     <h3 className="text-2xl md:text4xl font-semibold text-white mb-4 leading-tight">
         {title}
      </h3>
-     <p className="text-[#9CA3AF] text-base md:text-lg leading-relaxed font-light">
+     <p className="text-[#9CA3AF] text-sm md:text-lg sm:text-balance  font-light">
         {description}
      </p>
   </motion.div>
@@ -287,22 +286,12 @@ export default function HowItWorksSection() {
   ];
 
   return (
-    <section ref={containerRef} className="relative w-full py-24 md:py-32 bg-[#050505] overflow-hidden">
+    <section ref={containerRef} className="relative w-full py-20 bg-[#050505] overflow-hidden">
        <div className="absolute bottom-1/3 right-0 w-[500px] h-[500px] bg-[#A78BFA]/5 blur-[120px] rounded-full pointer-events-none" />
        <div className="max-w-7xl mx-auto px-6 relative z-10">
           
           {/* Header */}
           <div className="text-center mb-24 md:mb-32 max-w-3xl mx-auto">
-             <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#18181B] border border-white/5 shadow-lg mb-6 backdrop-blur-md"
-             >
-                <div className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-                <span className="text-xs font-bold text-gray-300 tracking-widest uppercase">Protocol Workflow</span>
-             </motion.div>
-             
              <motion.h2 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -310,7 +299,7 @@ export default function HowItWorksSection() {
                 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-6 tracking-tight leading-[1.1]"
              >
                 Three Steps to <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8B5CF6] via-[#A78BFA] to-[#C4B5FD] animate-gradient-x">
+                <span className="text-[#8B5CF6]">
                    Intelligent Wealth.
                 </span>
              </motion.h2>
@@ -319,7 +308,7 @@ export default function HowItWorksSection() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-lg md:text-xl text-[#9CA3AF] leading-relaxed font-light"
+                className="text-lg md:text-xl text-balance text-[#9CA3AF] leading-relaxed font-light"
              >
                 A frictionless onboarding experience designed for speed. 
                 No complex KYC, no waiting periods. Just connect and capitalize.
