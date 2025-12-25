@@ -4,8 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { FaXTwitter } from 'react-icons/fa6';
 import { IoWalletOutline } from 'react-icons/io5';
-import { BsStars, BsShieldCheck } from 'react-icons/bs';
-import { RiTokenSwapLine } from 'react-icons/ri';
+import { RiArrowRightLine } from 'react-icons/ri';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
@@ -256,18 +255,37 @@ useEffect(() => {
               transition={{ delay: 0.3 }}
               className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
             >
-              {/* Primary Button: Connect Wallet */}
-              <Link href="/ai" className="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-full bg-[#8B5CF6] px-8 font-medium text-white transition-all duration-300 hover:bg-[#7C3AED] hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]">
-                <span className="mr-2 text-xl"><IoWalletOutline /></span>
-                <span>Connect Wallet</span>
-                <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              </Link>
-
-              {/* Secondary Button: Follow on X */}
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center justify-center rounded-full border border-[#27272a] bg-[#1E1E24] px-8 font-medium text-[#E5E7EB] transition-all duration-300 hover:border-[#8B5CF6] hover:text-white hover:bg-[#27272a]">
-                <span className="mr-2 text-lg"><FaXTwitter /></span>
-                <span>Follow on X</span>
-              </a>
+             <Link href="/ai">
+                <motion.button
+                  whileHover={{ scale: 1.02, translateY: -2 }}
+                  whileTap={{ scale: 0.98, translateY: 1 }}
+                  className="relative group mx-auto px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-3 overflow-hidden isolate text-white shadow-[0_10px_40px_-10px_rgba(139,92,246,0.6)] transition-all duration-300"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-b from-[#8B5CF6] to-[#6D28D9] z-[-1]" />
+                  <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/40" />
+                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-black/30" />
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-transparent via-white/20 to-transparent transition-opacity duration-500 transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%]" />
+                
+                  <IoWalletOutline className="text-xl relative z-10" />
+                  <span className="relative z-10">Connect Wallet</span>
+                  <RiArrowRightLine className="w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform relative z-10" />
+                </motion.button>
+            </Link>
+  <motion.a
+    href="https://twitter.com"
+    target="_blank"
+    rel="noopener noreferrer"
+    whileHover={{ scale: 1.02, translateY: -2 }}
+    whileTap={{ scale: 0.98, translateY: 1 }}
+    className="relative mx-auto group px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-3 overflow-hidden isolate text-white shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)] transition-all duration-300"
+  >
+    <div className="absolute inset-0 bg-gradient-to-b from-[#27272a] to-[#09090b] z-[-1] border border-white/5" />
+    <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/20" />
+    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-black/50" />
+    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-transparent via-white/10 to-transparent transition-opacity duration-500 transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%]" />
+    <FaXTwitter className="text-[#A78BFA] group-hover:text-white transition-colors text-xl relative z-10" />
+    <span className="relative z-10 text-gray-200 group-hover:text-white transition-colors">Follow on X</span>
+  </motion.a>
             </motion.div>
 
             {/* Social Proof / Trust Line */}
