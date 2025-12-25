@@ -5,7 +5,6 @@ import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import {
   FaWallet,
   FaFingerprint,
-  FaTwitter,
   FaRetweet,
   FaHeart,
   FaCheck
@@ -13,6 +12,7 @@ import {
 import { RiBrainLine, RiDonutChartFill, RiCpuLine } from "react-icons/ri";
 import { BsLightningChargeFill, BsStars, BsShieldCheck, BsActivity } from "react-icons/bs";
 import { BiNetworkChart, BiCopy } from "react-icons/bi";
+import { BsTwitterX } from "react-icons/bs";
 
 // --- 1. ENHANCED SIMULATION CARDS ---
 
@@ -186,8 +186,8 @@ const RewardCard = () => {
           >
              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#0A0A0B] border border-white/10 flex items-center justify-center text-[#1DA1F2]">
-                        <FaTwitter className="text-sm" />
+                    <div className="w-8 h-8 rounded-full bg-[#0A0A0B] border border-white/10 flex items-center justify-center text-[#fffff]">
+                        <BsTwitterX className="text-sm" />
                     </div>
                     <div className="text-xs text-white font-medium">Verify Task</div>
                 </div>
@@ -240,7 +240,7 @@ const TimelineStep = ({ index, title, description, CardComponent, icon: Icon, al
   const isInView = useInView(ref, { once: true, margin: "-15%" });
 
   return (
-    <div ref={ref} className="relative grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-center mb-32 last:mb-0">
+    <div ref={ref} className="relative grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-24 items-center -mb-1 sm:mb-32 last:mb-0">
        
        {/* DESKTOP CENTER NODE */}
        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center justify-center z-20">
