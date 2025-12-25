@@ -246,7 +246,7 @@ const ContentText = ({ index, title, description, isInView }) => (
      <h3 className="text-2xl md:text4xl font-semibold text-white mb-4 leading-tight">
         {title}
      </h3>
-     <p className="text-[#9CA3AF] text-sm md:text-lg sm:text-balance  font-light">
+     <p className="text-[#9CA3AF]/90 text-sm md:text-lg sm:text-balance  font-light">
         {description}
      </p>
   </motion.div>
@@ -264,21 +264,21 @@ export default function HowItWorksSection() {
   const steps = [
     {
        title: "Connect Wallet",
-       description: "Instantly link your MetaMask via the BSC network. Our non-custodial login ensures your keys stay on your device while syncing your on-chain identity in milliseconds.",
+       description: "Instantly link your MetaMask via the BSC network. Our non custodial login ensures your keys stay on your device while syncing your on-chain identity in milliseconds.",
        CardComponent: WalletCard,
        icon: FaFingerprint,
        align: "right"
     },
     {
        title: "AI Analysis",
-       description: "The Portly AI engine scans your portfolio instantly. It visualizes risk factors, diversification scores, and market opportunities in a clean, institutional-grade dashboard.",
+       description: "The Portly AI engine scans your portfolio instantly. It visualizes risk factors, diversification scores, and market opportunities in a clean, institutional grade dashboard.",
        CardComponent: AnalysisCard,
        icon: RiDonutChartFill,
        align: "left"
     },
     {
        title: "Instant Rewards",
-       description: "Complete simple social tasks in the Rewards tab. Once verified, $PTLY tokens are airdropped to your connected wallet within 0.9 seconds—faster than a block confirmation.",
+       description: "Complete simple social tasks in the Rewards tab. Once verified, $PTLY tokens are airdropped to your connected wallet within 0.9 seconds faster than a block confirmation.",
        CardComponent: RewardCard,
        icon: BsStars,
        align: "right"
@@ -308,7 +308,7 @@ export default function HowItWorksSection() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-lg md:text-xl text-balance text-[#9CA3AF] leading-relaxed font-light"
+                className="text-sm md:text-xl sm:text-balance text-[#9CA3AF] leading-relaxed font-light"
              >
                 A frictionless onboarding experience designed for speed. 
                 No complex KYC, no waiting periods. Just connect and capitalize.
