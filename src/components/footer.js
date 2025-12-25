@@ -33,6 +33,7 @@ const NavLink = ({ href, label }) => (
 );
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear();
   return (
     <footer className="relative w-full bg-[#050509] overflow-hidden flex flex-col pt-10">
       {/* Content Area */}
@@ -68,11 +69,7 @@ const Footer = () => {
           </div>
 
           <div className="mt-10 flex flex-col sm:flex-row justify-between items-center border-t border-white/5 pt-6 text-xs text-gray-600">
-            <p>© 2024 Portly Project. All rights reserved.</p>
-            <div className="flex gap-4 mt-2 sm:mt-0">
-              <a href="#" className="hover:text-gray-400">Privacy</a>
-              <a href="#" className="hover:text-gray-400">Terms</a>
-            </div>
+            <p>© {currentYear} Portly Project. All rights reserved.</p>
           </div>
         </div>
       </div>
