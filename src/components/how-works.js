@@ -1,229 +1,260 @@
 "use client";
 
 import React, { useRef } from "react";
-import { motion, useScroll, useTransform, useSpring, useInView } from "framer-motion";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { 
   FaWallet, 
   FaFingerprint, 
-  FaCheckCircle,
-  FaTwitter,
-  FaRetweet,
-  FaHeart,
+  FaCheck,
   FaArrowRight
-} from "react-icons/fa";
-import { RiBrainLine, RiDonutChartFill, RiExchangeDollarLine } from "react-icons/ri";
-import { BsLightningChargeFill, BsStars, BsShieldCheck } from "react-icons/bs";
-import { BiNetworkChart } from "react-icons/bi";
+} from "react-icons/fa6"; // Updated to fa6 for sharper icons
+import { RiBrainLine, RiStockLine } from "react-icons/ri";
+import { BsLightningCharge, BsLayers } from "react-icons/bs";
+
+// --- SHARED UTILS ---
+
+// A subtle noise texture overlay for a premium "matte" finish
+const NoiseOverlay = () => (
+  <div 
+    className="absolute inset-0 opacity-[0.03] pointer-events-none z-0 mix-blend-overlay"
+    style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
+  />
+);
 
 // --- 1. ENHANCED SIMULATION CARDS ---
 
-// CARD 1: WALLET CONNECT (Holographic Scan Effect)
+// CARD 1: WALLET CONNECT (Hardware Wallet / Biometric Aesthetic)
 const WalletCard = () => {
   return (
-    <div className="relative w-full h-72 rounded-3xl bg-[#0E0E10] border border-white/5 overflow-hidden flex flex-col items-center justify-center p-6 shadow-2xl group hover:border-[#8B5CF6]/40 transition-all duration-500">
-      {/* Ambient Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1E1E24] to-[#0A0A0B]" />
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#8B5CF6]/50 to-transparent opacity-50" />
+    <div className="relative w-full h-80 rounded-[32px] bg-[#080808] border border-white/5 overflow-hidden flex flex-col items-center justify-center shadow-2xl group hover:border-white/10 transition-all duration-700">
+      <NoiseOverlay />
       
-      {/* Content Container */}
-      <div className="relative z-10 w-full max-w-[280px] bg-[#18181B]/80 backdrop-blur-xl rounded-2xl border border-white/10 p-5 shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-           <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#F59E0B]/10 flex items-center justify-center border border-[#F59E0B]/20">
-                 <FaWallet className="text-[#F59E0B] text-lg" />
-              </div>
-              <div>
-                 <div className="text-sm font-bold text-white">MetaMask</div>
-                 <div className="text-[10px] text-[#9CA3AF] tracking-wide">BSC MAINNET</div>
-              </div>
-           </div>
-           <div className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_10px_#10B981] animate-pulse" />
-        </div>
+      {/* Ambient Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-white/5 blur-[80px] rounded-full pointer-events-none" />
 
-        {/* Connection Animation */}
-        <div className="relative h-12 w-full bg-[#0A0A0B] rounded-lg border border-white/5 mb-4 overflow-hidden flex items-center px-3 gap-3">
-           <FaFingerprint className="text-[#8B5CF6] animate-pulse" />
-           <div className="flex-1 h-1.5 bg-[#1E1E24] rounded-full overflow-hidden">
-              <motion.div 
-                 className="h-full bg-gradient-to-r from-[#8B5CF6] to-[#C4B5FD]"
-                 initial={{ width: "0%" }}
-                 whileInView={{ width: "100%" }}
-                 transition={{ duration: 2, ease: "easeInOut", repeat: Infinity, repeatDelay: 1 }}
-              />
-           </div>
-        </div>
-
-        {/* Footer Status */}
-        <div className="flex justify-between items-center text-[10px]">
-           <span className="text-[#9CA3AF]">Connection Status</span>
-           <span className="text-[#A78BFA] font-mono bg-[#8B5CF6]/10 px-2 py-0.5 rounded border border-[#8B5CF6]/20">
-              ENCRYPTED
-           </span>
-        </div>
-      </div>
-
-      {/* Holographic Scan Line Overlay */}
+      {/* The "Physical" Card */}
       <motion.div 
-        className="absolute inset-x-0 h-12 bg-gradient-to-b from-[#8B5CF6]/10 to-transparent pointer-events-none z-20"
-        animate={{ top: ["-20%", "120%"] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-      />
+        className="relative z-10 w-[280px] h-[170px] bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] rounded-2xl border border-white/10 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col justify-between p-5"
+        whileHover={{ rotateX: 5, rotateY: 5, scale: 1.02 }}
+        transition={{ type: "spring", stiffness: 100, damping: 20 }}
+      >
+         {/* Card Texture */}
+         <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.02)_50%,transparent_75%,transparent_100%)] bg-[length:250%_250%] animate-[shimmer_3s_infinite_linear]" />
+
+         {/* Header */}
+         <div className="flex justify-between items-start">
+            <div className="flex items-center gap-2">
+               <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                  <FaWallet className="text-white/60 text-xs" />
+               </div>
+               <div className="flex flex-col">
+                  <span className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Protocol</span>
+                  <span className="text-xs text-white font-medium">Metamask</span>
+               </div>
+            </div>
+            {/* Simulated EMV Chip */}
+            <div className="w-10 h-8 rounded bg-gradient-to-br from-[#D4AF37] to-[#8A6E24] opacity-80 border border-[#FCD34D]/20 relative overflow-hidden">
+                <div className="absolute inset-0 border border-black/20 rounded-[2px]" />
+                <div className="absolute top-1/2 left-0 right-0 h-px bg-black/20" />
+                <div className="absolute left-1/2 top-0 bottom-0 w-px bg-black/20" />
+            </div>
+         </div>
+
+         {/* Footer / Biometric Scan */}
+         <div className="flex items-center justify-between mt-auto">
+            <div className="flex flex-col gap-1">
+               <span className="text-[9px] text-white/30 font-mono tracking-widest">ID: 0x...8F2A</span>
+               <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
+                  <span className="text-[10px] text-emerald-500/80 font-medium tracking-wide">CONNECTED</span>
+               </div>
+            </div>
+            <div className="relative w-10 h-10 flex items-center justify-center">
+               <FaFingerprint className="text-white/20 text-2xl relative z-10" />
+               <motion.div 
+                 className="absolute inset-0 border border-white/30 rounded-full"
+                 initial={{ scale: 0.8, opacity: 0 }}
+                 animate={{ scale: 1.2, opacity: 0 }}
+                 transition={{ duration: 2, repeat: Infinity }}
+               />
+            </div>
+         </div>
+      </motion.div>
+
+      {/* Background Abstract Lines */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+         <div className="absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+         <div className="absolute top-1/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-50" />
+         <div className="absolute bottom-1/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-50" />
+      </div>
     </div>
   );
 };
 
-// CARD 2: AI DASHBOARD (Scanning Grid)
+// CARD 2: AI DASHBOARD (Terminal / Financial Instrument Look)
 const AnalysisCard = () => {
   return (
-    <div className="relative w-full h-72 rounded-3xl bg-[#0E0E10] border border-white/5 overflow-hidden p-6 shadow-2xl group hover:border-[#8B5CF6]/40 transition-all duration-500 flex flex-col">
-       {/* Background Grid */}
-       <div className="absolute inset-0 opacity-10" 
-            style={{ backgroundImage: 'linear-gradient(#8B5CF6 1px, transparent 1px), linear-gradient(90deg, #8B5CF6 1px, transparent 1px)', backgroundSize: '20px 20px' }} 
-       />
-       
-       {/* Header */}
-       <div className="relative z-10 flex justify-between items-center mb-6">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#1E1E24] border border-white/10">
-             <RiBrainLine className="text-[#A78BFA]" />
-             <span className="text-xs font-bold text-white tracking-widest">AI_AGENT</span>
-          </div>
-          <BiNetworkChart className="text-[#9CA3AF]" />
-       </div>
+    <div className="relative w-full h-80 rounded-[32px] bg-[#080808] border border-white/5 overflow-hidden flex flex-col shadow-2xl group hover:border-white/10 transition-all duration-700">
+      <NoiseOverlay />
+      
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02]">
+         <div className="flex items-center gap-2">
+            <RiBrainLine className="text-white/40" />
+            <span className="text-xs font-mono text-white/60 tracking-wider">AI_ENGINE v2.4</span>
+         </div>
+         <div className="flex gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-white/10" />
+            <div className="w-2 h-2 rounded-full bg-white/10" />
+         </div>
+      </div>
 
-       {/* Live Charts */}
-       <div className="relative z-10 flex-1 flex items-end gap-1.5 mb-4 px-2">
-          {[30, 50, 45, 75, 55, 90, 65, 80].map((h, i) => (
-             <motion.div 
-                key={i}
-                className="flex-1 bg-gradient-to-t from-[#8B5CF6]/40 to-[#8B5CF6]/80 rounded-t-sm relative overflow-hidden group-hover:from-[#8B5CF6]/60 group-hover:to-[#A78BFA]"
-                initial={{ height: "10%" }}
-                whileInView={{ height: `${h}%` }}
-                transition={{ duration: 0.8, delay: i * 0.05 }}
-             >
-                <div className="absolute top-0 left-0 right-0 h-px bg-white/50" />
-             </motion.div>
-          ))}
-          
-          {/* Scanning Line overlaying charts */}
-          <motion.div 
-             className="absolute top-0 bottom-0 w-px bg-[#10B981] shadow-[0_0_15px_#10B981]"
-             animate={{ left: ["0%", "100%"] }}
-             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-          />
-       </div>
+      {/* Main Content */}
+      <div className="p-6 flex-1 flex flex-col justify-between relative">
+         {/* Grid Background */}
+         <div className="absolute inset-0 opacity-[0.07]" 
+            style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '30px 30px' }} 
+         />
 
-       {/* Insight Row */}
-       <div className="relative z-10 flex gap-2">
-          <div className="flex-1 bg-[#1E1E24]/80 p-2 rounded-lg border border-white/5 backdrop-blur-sm">
-             <div className="text-[10px] text-gray-400">Risk Score</div>
-             <div className="text-sm font-bold text-white flex items-center gap-1">
-                <BsShieldCheck className="text-[#10B981]" /> 98/100
-             </div>
-          </div>
-          <div className="flex-1 bg-[#1E1E24]/80 p-2 rounded-lg border border-white/5 backdrop-blur-sm">
-             <div className="text-[10px] text-gray-400">Opp. Found</div>
-             <div className="text-sm font-bold text-[#A78BFA]">3 Assets</div>
-          </div>
-       </div>
+         {/* Stats Row */}
+         <div className="flex gap-8 relative z-10">
+            <div>
+               <div className="text-[10px] text-white/40 font-mono mb-1">RISK INDEX</div>
+               <div className="text-xl font-light text-white font-mono">12.4<span className="text-emerald-500 text-xs ml-1">▼</span></div>
+            </div>
+            <div>
+               <div className="text-[10px] text-white/40 font-mono mb-1">PROJECTED</div>
+               <div className="text-xl font-light text-white font-mono">+42%<span className="text-emerald-500 text-xs ml-1">▲</span></div>
+            </div>
+         </div>
+
+         {/* Chart Visualization */}
+         <div className="flex items-end gap-1 h-24 relative z-10 mt-4 mask-image-gradient-b">
+            {[40, 65, 50, 80, 55, 90, 70, 95, 85, 60].map((h, i) => (
+               <motion.div 
+                  key={i}
+                  className="flex-1 bg-white"
+                  style={{ opacity: 0.1 + (i * 0.05) }} // Gradient opacity
+                  initial={{ height: "10%" }}
+                  whileInView={{ height: `${h}%` }}
+                  transition={{ duration: 1, delay: i * 0.05, ease: "circOut" }}
+               />
+            ))}
+            {/* Scanning Line */}
+            <motion.div 
+               className="absolute top-0 bottom-0 w-px bg-white/40 shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+               animate={{ left: ["0%", "100%"] }}
+               transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+            />
+         </div>
+      </div>
     </div>
   );
 };
 
-// CARD 3: SOCIAL REWARDS (Interaction Simulation)
+// CARD 3: REWARDS (Notification Center / Glassmorphism)
 const RewardCard = () => {
   return (
-    <div className="relative w-full h-72 rounded-3xl bg-[#0E0E10] border border-white/5 overflow-hidden flex flex-col items-center justify-center p-6 shadow-2xl group hover:border-[#8B5CF6]/40 transition-all duration-500">
-       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_#F59E0B15,_transparent_70%)]" />
+    <div className="relative w-full h-80 rounded-[32px] bg-[#080808] border border-white/5 overflow-hidden flex flex-col items-center justify-center shadow-2xl group hover:border-white/10 transition-all duration-700">
+      <NoiseOverlay />
+      {/* Background Radial Gradient */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,_#ffffff08,_transparent_50%)]" />
 
-       {/* Social Task Simulation */}
-       <motion.div 
-          className="w-full max-w-[260px] bg-[#1E1E24] rounded-xl border border-white/5 p-4 mb-4 relative z-10"
-          initial={{ y: 0 }}
-          whileInView={{ y: -10 }}
-          transition={{ duration: 0.5 }}
-       >
-          <div className="flex items-center gap-3 mb-3">
-             <div className="w-8 h-8 rounded-full bg-[#1DA1F2]/20 flex items-center justify-center text-[#1DA1F2]">
-                <FaTwitter />
-             </div>
-             <div className="flex-1 h-2 bg-[#2A2A30] rounded-full" />
-          </div>
-          <div className="flex gap-4 pl-11">
-             <div className="text-gray-500 text-xs flex items-center gap-1"><FaHeart className="text-red-500" /> Liked</div>
-             <div className="text-gray-500 text-xs flex items-center gap-1"><FaRetweet className="text-green-500" /> Reposted</div>
-          </div>
-       </motion.div>
+      {/* Main Glass Panel */}
+      <motion.div 
+         className="relative w-64 bg-white/[0.03] backdrop-blur-md rounded-2xl border border-white/10 p-4"
+         initial={{ y: 20, opacity: 0 }}
+         whileInView={{ y: 0, opacity: 1 }}
+         transition={{ duration: 0.8 }}
+      >
+         {/* Top Notification */}
+         <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/5">
+            <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
+               <BsLayers className="text-sm" />
+            </div>
+            <div>
+               <div className="text-xs text-white font-medium">Task Completed</div>
+               <div className="text-[10px] text-white/40">Just now • Social Engagement</div>
+            </div>
+            <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500" />
+         </div>
 
-       {/* Arrow Down */}
-       <FaArrowRight className="text-[#8B5CF6] rotate-90 mb-4 animate-bounce" />
+         {/* Incoming Asset */}
+         <div className="flex items-center justify-between">
+            <div className="flex flex-col">
+               <span className="text-[10px] text-white/40 font-mono uppercase">Incoming Asset</span>
+               <span className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                  +500 PTLY
+               </span>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#D4AF37] to-[#FCD34D] flex items-center justify-center text-black shadow-lg shadow-[#D4AF37]/20">
+               <BsLightningCharge className="text-xs" />
+            </div>
+         </div>
+      </motion.div>
 
-       {/* Reward Toast */}
-       <motion.div 
-          className="w-full max-w-[260px] bg-gradient-to-r from-[#1E1E24] to-[#0A0A0B] rounded-xl border border-[#F59E0B]/30 p-3 flex items-center gap-3 relative z-10 shadow-[0_0_20px_-5px_rgba(245,158,11,0.3)]"
-          initial={{ scale: 0.9, opacity: 0 }}
-          whileInView={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.5, type: "spring" }}
-       >
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#F59E0B] to-[#D97706] flex items-center justify-center text-white shadow-lg">
-             <BsLightningChargeFill />
-          </div>
-          <div>
-             <div className="text-xs text-[#9CA3AF]">Reward Received</div>
-             <div className="text-base font-bold text-white flex items-center gap-2">
-                500 PTLY <span className="text-[10px] bg-[#F59E0B]/20 text-[#F59E0B] px-1.5 py-0.5 rounded">0.9s</span>
-             </div>
-          </div>
-       </motion.div>
+      {/* Floating Success Indicator */}
+      <motion.div 
+         className="absolute bottom-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#10B981]/10 border border-[#10B981]/20 backdrop-blur-sm"
+         initial={{ opacity: 0, y: 10 }}
+         whileInView={{ opacity: 1, y: 0 }}
+         transition={{ delay: 0.4, duration: 0.5 }}
+      >
+         <FaCheck className="text-[10px] text-[#10B981]" />
+         <span className="text-[10px] font-mono text-[#10B981] font-medium tracking-wide">TX VERIFIED 0.9s</span>
+      </motion.div>
     </div>
   );
 };
 
 // --- 2. TIMELINE COMPONENTS ---
 
-const TimelineStep = ({ index, title, description, CardComponent, icon: Icon, align }) => {
+const TimelineStep = ({ index, title, description, CardComponent, stepNum, align }) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-15%" });
+  const isInView = useInView(ref, { once: true, margin: "-10%" });
 
   return (
-    <div ref={ref} className="relative grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center mb-24 md:mb-32 last:mb-0">
+    <div ref={ref} className="relative grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-center mb-32 last:mb-0">
        
-       {/* DESKTOP CENTER NODE */}
+       {/* CENTER NODE (Desktop) */}
        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center justify-center z-20">
           <motion.div 
-             initial={{ scale: 0 }}
-             animate={isInView ? { scale: 1 } : { scale: 0 }}
-             transition={{ type: "spring", stiffness: 200, damping: 20 }}
-             className="w-12 h-12 rounded-full bg-[#0A0A0B] border border-[#8B5CF6] flex items-center justify-center shadow-[0_0_20px_-5px_#8B5CF6] relative"
+             initial={{ scale: 0, opacity: 0 }}
+             animate={isInView ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
+             transition={{ type: "spring", stiffness: 150, damping: 20 }}
+             className="w-3 h-3 rounded-full bg-white border border-black ring-4 ring-black shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+          />
+       </div>
+
+       {/* TEXT CONTENT */}
+       <div className={`relative z-10 order-2 ${align === 'right' ? 'md:order-1 md:text-right' : 'md:order-2 md:text-left'}`}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+            className="flex flex-col gap-4"
           >
-             <Icon className="text-[#A78BFA] text-lg" />
+             <div className={`flex ${align === 'right' ? 'md:justify-end' : 'md:justify-start'} items-center gap-3`}>
+                <span className="font-mono text-xs text-white/30 tracking-widest uppercase">Step 0{index + 1}</span>
+                <div className="h-px w-12 bg-white/10" />
+             </div>
+             
+             <h3 className="text-3xl md:text-4xl font-medium text-white tracking-tight leading-[1.1]">
+                {title}
+             </h3>
+             <p className={`text-white/50 text-base md:text-lg leading-relaxed font-light ${align === 'right' ? 'md:pl-12' : 'md:pr-12'}`}>
+                {description}
+             </p>
           </motion.div>
        </div>
 
-       {/* CONTENT BLOCK */}
-       <div className={`relative z-10 order-2 ${align === 'right' ? 'md:order-1 md:text-right' : 'md:order-2 md:text-left'}`}>
-          <div className={`hidden md:flex flex-col ${align === 'right' ? 'items-end' : 'items-start'}`}>
-              <ContentText index={index} title={title} description={description} isInView={isInView} />
-          </div>
-          {/* Mobile Text (Always First) */}
-          <div className="flex md:hidden flex-col mb-8 pl-8 relative">
-              {/* Mobile Line */}
-              <div className="absolute left-2 top-0 bottom-0 w-px bg-gradient-to-b from-[#8B5CF6] to-transparent" />
-              <div className="absolute left-0 top-0 w-5 h-5 rounded-full bg-[#0A0A0B] border border-[#8B5CF6] flex items-center justify-center z-10">
-                 <span className="text-[10px] text-[#A78BFA] font-bold">{index + 1}</span>
-              </div>
-              
-              <ContentText index={index} title={title} description={description} isInView={isInView} />
-          </div>
-       </div>
-
-       {/* CARD BLOCK */}
+       {/* CARD PREVIEW */}
        <div className={`relative z-10 order-1 ${align === 'right' ? 'md:order-2' : 'md:order-1'}`}>
           <motion.div
-             initial={{ opacity: 0, y: 40, scale: 0.95 }}
-             animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 40, scale: 0.95 }}
-             transition={{ duration: 0.7, ease: "easeOut" }}
-             className="w-full"
+             initial={{ opacity: 0, y: 40, filter: "blur(10px)" }}
+             animate={isInView ? { opacity: 1, y: 0, filter: "blur(0px)" } : { opacity: 0, y: 40, filter: "blur(10px)" }}
+             transition={{ duration: 0.8, ease: "circOut" }}
+             className="w-full pl-4 md:pl-0"
           >
              <CardComponent />
           </motion.div>
@@ -233,24 +264,6 @@ const TimelineStep = ({ index, title, description, CardComponent, icon: Icon, al
   );
 };
 
-const ContentText = ({ index, title, description, isInView }) => (
-  <motion.div
-    initial={{ opacity: 0, x: 0, y: 20 }}
-    animate={isInView ? { opacity: 1, x: 0, y: 0 } : { opacity: 0, x: 0, y: 20 }}
-    transition={{ duration: 0.6, delay: 0.2 }}
-    className="sm:px-8"
-  >
-     <div className="inline-block px-3 py-1 rounded-full bg-[#1E1E24] border border-[#C4B5FD]/20 mb-4">
-        <span className="text-xs font-bold text-[#A78BFA] tracking-wider font-mono">STEP 0{index + 1}</span>
-     </div>
-     <h3 className="text-2xl md:text4xl font-semibold text-white mb-4 leading-tight">
-        {title}
-     </h3>
-     <p className="text-[#9CA3AF]/90 text-sm md:text-lg sm:text-balance  font-light">
-        {description}
-     </p>
-  </motion.div>
-);
 
 // --- 3. MAIN SECTION CONTAINER ---
 
@@ -258,75 +271,67 @@ export default function HowItWorksSection() {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start end", "end start"]
+    offset: ["start center", "end center"]
   });
 
   const steps = [
     {
-       title: "Connect Wallet",
-       description: "Instantly link your MetaMask via the BSC network. Our non custodial login ensures your keys stay on your device while syncing your on-chain identity in milliseconds.",
+       title: "Connect Identity",
+       description: "Secure, non-custodial login. Link your wallet to verify on-chain history instantly without compromising keys or privacy.",
        CardComponent: WalletCard,
-       icon: FaFingerprint,
        align: "right"
     },
     {
-       title: "AI Analysis",
-       description: "The Portly AI engine scans your portfolio instantly. It visualizes risk factors, diversification scores, and market opportunities in a clean, institutional grade dashboard.",
+       title: "Intelligent Analysis",
+       description: "Our engine processes thousands of market signals in real-time, providing institutional-grade risk assessment and opportunity spotting.",
        CardComponent: AnalysisCard,
-       icon: RiDonutChartFill,
        align: "left"
     },
     {
-       title: "Instant Rewards",
-       description: "Complete simple social tasks in the Rewards tab. Once verified, $PTLY tokens are airdropped to your connected wallet within 0.9 seconds faster than a block confirmation.",
+       title: "Yield & Rewards",
+       description: "Automated distribution. Complete ecosystem tasks and receive verified token transfers directly to your wallet in under a second.",
        CardComponent: RewardCard,
-       icon: BsStars,
        align: "right"
     }
   ];
 
   return (
-    <section ref={containerRef} className="relative w-full py-20 bg-[#050505] overflow-hidden">
-       <div className="absolute bottom-1/3 right-0 w-[500px] h-[500px] bg-[#A78BFA]/5 blur-[120px] rounded-full pointer-events-none" />
+    <section ref={containerRef} className="relative w-full py-32 bg-[#050505] overflow-hidden">
+       
+       {/* Global Background Elements */}
+       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+       
        <div className="max-w-7xl mx-auto px-6 relative z-10">
           
-          {/* Header */}
-          <div className="text-center mb-24 md:mb-32 max-w-3xl mx-auto">
-             <motion.h2 
+          {/* Section Header */}
+          <div className="text-center mb-32 max-w-2xl mx-auto">
+             <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-6 tracking-tight leading-[1.1]"
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
              >
-                Three Steps to <br />
-                <span className="text-[#8B5CF6]">
-                   Intelligent Wealth.
-                </span>
-             </motion.h2>
-
-             <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-sm md:text-xl sm:text-balance text-[#9CA3AF] leading-relaxed font-light"
-             >
-                A frictionless onboarding experience designed for speed. 
-                No complex KYC, no waiting periods. Just connect and capitalize.
-             </motion.p>
+                <div className="inline-flex items-center justify-center px-3 py-1 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-sm mb-6">
+                   <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/60">Process Flow</span>
+                </div>
+                <h2 className="text-4xl md:text-6xl font-medium text-white mb-6 tracking-tight">
+                   Precision in <br /> every step.
+                </h2>
+             </motion.div>
           </div>
 
           {/* Timeline Wrapper */}
           <div className="relative">
-             {/* Center Line (Desktop Only) */}
+             {/* Vertical Line (Desktop) */}
              <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/5 -translate-x-1/2 hidden md:block">
                 <motion.div 
-                   className="w-full bg-gradient-to-b from-[#8B5CF6] via-[#A78BFA] to-[#8B5CF6]"
+                   className="w-full bg-gradient-to-b from-transparent via-white/20 to-transparent"
                    style={{ height: useTransform(scrollYProgress, [0, 1], ["0%", "100%"]) }}
                 />
              </div>
 
              {/* Steps */}
-             <div className="space-y-12 md:space-y-0">
+             <div>
                 {steps.map((step, i) => (
                    <TimelineStep key={i} index={i} {...step} />
                 ))}
