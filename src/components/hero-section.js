@@ -107,7 +107,12 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = ["Ecosystem", "Features", "Governance", "Docs"];
+  const navLinks = [
+    { name: "Home", href: "/", external: false },
+    { name: "Agent", href: "/ai", external: false },
+    { name: "Tasks", href: "/ai#tasks", external: false },
+    { name: "Bscscan", href: "https://bscscan.com", external: true },
+  ];
 
   return (
     <>
@@ -127,11 +132,17 @@ const Navbar = () => {
 
           {/* Desktop Links */}
           <div className="hidden md:flex items-center gap-8 bg-white/5 px-8 py-3 rounded-full border border-white/5 backdrop-blur-sm shadow-inner hover:border-white/10 transition-colors">
-            {navLinks.map((link) => (
-              <a key={link} href={`#${link.toLowerCase()}`} className="text-sm font-medium text-[#9CA3AF] hover:text-white transition-colors relative group">
-                {link}
+          {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                target={link.external ? "_blank" : undefined}
+                rel={link.external ? "noopener noreferrer" : undefined}
+                className="text-sm font-medium text-[#9CA3AF] hover:text-white transition-colors relative group"
+              >
+                {link.name}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#A78BFA] transition-all duration-300 group-hover:w-full opacity-0 group-hover:opacity-100" />
-              </a>
+              </Link>
             ))}
           </div>
 
@@ -164,17 +175,23 @@ const Navbar = () => {
             className="fixed inset-0 z-40 bg-[#0A0A0B]/95 backdrop-blur-3xl flex flex-col items-center justify-center md:hidden"
           >
             <div className="flex flex-col items-center gap-6 w-full px-8">
-              {navLinks.map((link, i) => (
+            {navLinks.map((link, i) => (
                 <motion.a
-                  key={link}
-                  href={`#${link.toLowerCase()}`}
+                  key={link.name}
+                  href={link.href}
+                  target={link.external ? "_blank" : undefined}
+                  rel={link.external ? "noopener noreferrer" : undefined}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + i * 0.1, type: "spring", stiffness: 100 }}
+                  transition={{
+                    delay: 0.1 + i * 0.1,
+                    type: "spring",
+                    stiffness: 100,
+                  }}
                   className="text-3xl font-bold text-white/70 hover:text-white hover:tracking-wide transition-all cursor-pointer"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {link}
+                  {link.name}
                 </motion.a>
               ))}
               <motion.div 
