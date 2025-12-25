@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { FaXTwitter } from "react-icons/fa6";
 import { LiaTelegramPlane } from "react-icons/lia";
 import { SiBnbchain } from "react-icons/si";
+import Image from 'next/image';
 
 const SocialLink = ({ href, icon: Icon, label }) => (
   <motion.a
@@ -45,22 +46,14 @@ const Footer = () => {
             
             {/* Brand */}
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#3B82F6] p-[1px]">
-                <div className="w-full h-full bg-[#08080C] rounded-xl flex items-center justify-center">
-                  <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-[#8B5CF6] to-[#3B82F6]">P</span>
-                </div>
-              </div>
-              <div>
-                <h3 className="text-white font-bold text-lg tracking-wider">PORTLY</h3>
-                <p className="text-gray-500 text-xs">The Future of DeFi</p>
-              </div>
+              <Image src='/logo.png' alt='logo' width={150} height={60}/>
             </div>
 
             {/* Links */}
             <div className="flex flex-col lg:flex-row items-center gap-6">
               <nav className="flex items-center gap-2">
-                <NavLink href="#" label="Agent Dashboard" />
-                <NavLink href="#" label="Rewards" />
+                <NavLink href="/ai" label="Agent Dashboard" />
+                <NavLink href="/ai#tasks" label="Rewards" />
               </nav>
               
               <div className="w-12 h-px bg-white/10 lg:w-px lg:h-8" />
