@@ -214,14 +214,14 @@ const RewardCard = () => {
              transition={{ duration: 0.6, delay: 2, ease: "backOut" }}
           >
              <div className="w-full h-full bg-[#0A0A0B]/80 backdrop-blur-md rounded-xl border border-[#F59E0B]/20 p-4 flex flex-col justify-center items-center text-center shadow-[0_10px_40px_-10px_rgba(245,158,11,0.1)]">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-b from-[#F59E0B20] to-[#F59E0B05] border border-[#F59E0B]/30 flex items-center justify-center mb-3">
+                <div className="w-12 h-12 p-2 backdrop-blur-3xl rounded-full bg-gradient-to-b from-[#F59E0B20] to-[#F59E0B05] border border-[#F59E0B]/30 flex items-center justify-center mb-3">
                    <BsLightningChargeFill className="text-[#F59E0B] text-lg drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
                 </div>
                 
                 <h4 className="text-white font-bold text-lg mb-0.5">500 PTLY</h4>
                 <p className="text-[10px] text-[#9CA3AF] mb-3">Reward Airdropped</p>
                 
-                <div className="flex items-center gap-2 px-2 py-1 bg-[#F59E0B]/10 rounded border border-[#F59E0B]/20">
+                <div className="flex items-center backdrop-blur-2xl gap-2 px-2 py-1 bg-[#F59E0B]/20 rounded border border-[#F59E0B]/30">
                    <FaCheck className="text-[8px] text-[#F59E0B]" />
                    <span className="text-[9px] font-mono text-[#F59E0B]">CONFIRMED 0.9s</span>
                 </div>
