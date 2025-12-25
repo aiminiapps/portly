@@ -283,36 +283,95 @@ const CHAINS = [
 const SpinningToken = () => {
     const mesh = useRef();
     
-    useFrame((state) => {
-        mesh.current.rotation.y += 0.01;
-        mesh.current.rotation.x = Math.sin(state.clock.getElapsedTime() * 0.5) * 0.1;
+    useFrame((state, delta) => {
+        if (mesh.current) {
+            // Complex Gyroscopic Spin
+            // Constant rotation on Y (Spinning)
+            mesh.current.rotation.y += delta * 1.5;
+            
+            // Gentle wobbling on X and Z to catch the light (Shiny effect)
+            mesh.current.rotation.x = Math.sin(state.clock.getElapsedTime() * 1) * 0.2;
+            mesh.current.rotation.z = Math.cos(state.clock.getElapsedTime() * 0.8) * 0.1;
+        }
+    });
+
+    const goldenMaterial = new THREE.MeshPhysicalMaterial({
+        color: "#FBBF24", // Richer Gold
+        metalness: 1,
+        roughness: 0.1,
+        clearcoat: 1,     // Polish layer
+        clearcoatRoughness: 0.1,
+        reflectivity: 1,
+        emissive: "#B45309",
+        emissiveIntensity: 0.2
     });
 
     return (
         <group>
-            <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
+            {/* Float wrapper gives it that weightless crypto feel */}
+            <Float speed={4} rotationIntensity={1} floatIntensity={1}>
                 <group ref={mesh} rotation={[Math.PI / 2, 0, 0]}>
-                    {/* Main Coin Body */}
+                    
+                    {/* 1. The Coin Edge (Rim) */}
                     <Cylinder args={[1.2, 1.2, 0.15, 64]}>
-                        <meshStandardMaterial 
+                        <primitive object={goldenMaterial} />
+                    </Cylinder>
+
+                    {/* 2. The Face (Recessed slightly) */}
+                    <Cylinder args={[1.05, 1.05, 0.16, 64]}>
+                         <meshStandardMaterial 
                             color="#F59E0B" 
-                            metalness={1} 
-                            roughness={0.15} 
-                            envMapIntensity={2}
+                            metalness={0.8} 
+                            roughness={0.2} 
                         />
                     </Cylinder>
-                    {/* Ridge */}
-                    <Torus args={[1.2, 0.05, 16, 64]} rotation={[Math.PI/2, 0, 0]}>
-                         <meshStandardMaterial color="#FCD34D" metalness={1} roughness={0} />
-                    </Torus>
-                    {/* Inner Hexagon Detail */}
-                    <Cylinder args={[0.7, 0.7, 0.16, 6]}>
-                        <meshStandardMaterial color="#B45309" metalness={0.8} roughness={0.2} />
-                    </Cylinder>
+
+                    {/* 3. The Text (Front Side) */}
+                    <group position={[0, 0.09, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                        <Text
+                            font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
+                            fontSize={0.5}
+                            letterSpacing={-0.05}
+                            color="#FFFFFF" // White gold look for contrast
+                            anchorX="center"
+                            anchorY="middle"
+                            fontWeight="bold"
+                        >
+                            $PTLY
+                            <meshStandardMaterial color="#FFFBEB" emissive="#F59E0B" emissiveIntensity={0.5} />
+                        </Text>
+                        
+                        {/* Decorative Arc/Ring on face */}
+                        <mesh position={[0, 0, -0.01]}>
+                            <ringGeometry args={[0.95, 1.0, 64]} />
+                            <meshStandardMaterial color="#B45309" />
+                        </mesh>
+                    </group>
+
+                    {/* 4. The Text (Back Side - Rotated 180) */}
+                    <group position={[0, -0.09, 0]} rotation={[Math.PI / 2, 0, Math.PI]}>
+                        <Text
+                            font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
+                            fontSize={0.5}
+                            letterSpacing={-0.05}
+                            color="#FFFFFF"
+                            anchorX="center"
+                            anchorY="middle"
+                            fontWeight="bold"
+                        >
+                            $PTLY
+                            <meshStandardMaterial color="#FFFBEB" emissive="#F59E0B" emissiveIntensity={0.5} />
+                        </Text>
+                    </group>
+                    
                 </group>
             </Float>
-            {/* Magical Dust */}
-            <Sparkles count={40} scale={4} size={4} speed={0.4} opacity={0.5} color="#FCD34D" />
+
+            {/* Magical Gold Dust */}
+            <Sparkles count={50} scale={5} size={3} speed={0.4} opacity={0.6} color="#FCD34D" />
+            
+            {/* Bloom Glow (Simulated with Point Light) */}
+            <pointLight distance={3} intensity={2} color="#F59E0B" />
         </group>
     );
 };
@@ -493,19 +552,7 @@ export default function AboutSection() {
       <div className="max-w-7xl mx-auto relative z-10">
         
         {/* Section Header */}
-        <div className="text-center mb-20 max-w-3xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1E1E24]/80 border border-[#8B5CF6]/30 backdrop-blur-md mb-6 shadow-[0_0_15px_-3px_rgba(139,92,246,0.3)]"
-          >
-            <FaBolt className="text-[#F59E0B] w-3 h-3 animate-pulse" />
-            <span className="text-[11px] font-bold text-[#E5E7EB] tracking-[0.2em] uppercase">
-              System Architecture
-            </span>
-          </motion.div>
-          
+        <div className="text-center sm:mb-20 mb-10 max-w-3xl mx-auto">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -524,7 +571,7 @@ export default function AboutSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-[#A1A1AA] text-lg leading-relaxed"
+            className="text-[#A1A1AA] text-sm sm:text-lg text-balance leading-relaxed"
           >
             Portly isn't just a tracker. It's a sentient layer on top of the blockchain, 
             processing millions of signals to guide your wealth creation.
