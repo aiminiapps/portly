@@ -17,7 +17,7 @@ import {
   Plane
 } from "@react-three/drei";
 import * as THREE from "three";
-import { Edges } from '@react-three/drei';
+import { Edges, Text } from '@react-three/drei';
 import * as random from "maath/random/dist/maath-random.esm";
 
 // --- STRICTLY REQUESTED REACT-ICONS ---
@@ -167,79 +167,104 @@ const SpinningToken = () => {
 // ------------------------------------------------------------------
 // 3D SCENE 4: DATA EQUALIZER (Real-Time Sync)
 // ------------------------------------------------------------------
-const DataEqualizer = () => {
-    const bars = useRef([]);
-    const floorRef = useRef();
+const BarWithData = ({ index }) => {
+    const meshRef = useRef();
+    const textRef = useRef();
+    
+    // Random offset so bars don't move in unison
+    const offset = index * 0.8;
 
     useFrame((state) => {
         const t = state.clock.getElapsedTime();
         
-        // Animate Bars - Slower, more organic wave
-        bars.current.forEach((bar, i) => {
-            if (bar) {
-                // Reduced speed (t * 1.2) and added a complex wave for variety
-                const wave = Math.sin(t * 1.2 + i * 0.8);
-                const scaleY = 0.8 + Math.abs(wave) * 1.5; // Taller minimum height
-                
-                // Smooth interpolation for physics-like movement
-                bar.scale.y = THREE.MathUtils.lerp(bar.scale.y, scaleY, 0.1);
-                bar.position.y = bar.scale.y / 2;
-                
-                // Dynamic Glow: Brighter when tall
-                bar.material.emissiveIntensity = 0.5 + Math.abs(wave) * 1.5;
-            }
-        });
+        // 1. Slowed down speed (t * 0.5)
+        const wave = Math.sin(t * 0.5 + offset);
+        
+        // Calculate Height (Range approx 0.5 to 2.5)
+        const targetScale = 0.8 + Math.abs(wave) * 1.8; 
+        
+        if (meshRef.current) {
+            // Smoothly animate height
+            meshRef.current.scale.y = THREE.MathUtils.lerp(meshRef.current.scale.y, targetScale, 0.1);
+            meshRef.current.position.y = meshRef.current.scale.y / 2;
+            
+            // Adjust glow intensity based on height
+            meshRef.current.material.emissiveIntensity = 0.5 + Math.abs(wave);
+        }
 
+        // 2. Update Number based on height
+        if (textRef.current && meshRef.current) {
+            // Position text just above the bar
+            textRef.current.position.y = meshRef.current.scale.y + 0.3;
+            
+            // Map height to a number (e.g., 0.8 -> 30, 2.5 -> 99)
+            const val = Math.floor(meshRef.current.scale.y * 38);
+            
+            // Only trigger update if number changes (Performance)
+            if (textRef.current.text !== str(val)) {
+                textRef.current.text = val + '%';
+            }
+        }
+    });
+
+    // Helper to safely convert to string
+    const str = (n) => '' + n + '%';
+
+    return (
+        <group position={[index * 0.5, 0, 0]}>
+            <mesh ref={meshRef}>
+                <boxGeometry args={[0.3, 1, 0.3]} />
+                <meshPhysicalMaterial 
+                    color="#2e1065"      
+                    emissive="#8B5CF6"   
+                    metalness={0.9}      
+                    roughness={0.1}      
+                    clearcoat={1.0}
+                />
+                <Edges threshold={15} color="white" scale={1.05} opacity={0.3} transparent />
+            </mesh>
+
+            {/* 3. Floating Data Number */}
+            <Text
+                ref={textRef}
+                position={[0, 1.5, 0]} // Initial position
+                fontSize={0.25}
+                color="white"
+                anchorX="center"
+                anchorY="middle"
+                font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
+            >
+                0%
+            </Text>
+        </group>
+    );
+};
+
+const DataEqualizer = () => {
+    const floorRef = useRef();
+
+    useFrame((state) => {
         // Scroll Floor Grid slowly
         if(floorRef.current) {
-            floorRef.current.position.z = (t * 0.2) % 1; // Slow constant flow
+            floorRef.current.position.z = (state.clock.getElapsedTime() * 0.2) % 1;
         }
     });
 
     return (
         <group position={[-1.2, -1.5, 0]}>
-            {/* Ambient Purple Light for the base */}
             <pointLight position={[2, 2, 2]} intensity={2} color="#8B5CF6" distance={5} />
 
-            {/* Server Rack Bars */}
+            {/* Render 6 Independent Bars */}
             {[...Array(6)].map((_, i) => (
-                <mesh 
-                    key={i} 
-                    ref={el => bars.current[i] = el} 
-                    position={[i * 0.5, 0, 0]} // Slightly wider spacing
-                >
-                    <boxGeometry args={[0.3, 1, 0.3]} />
-                    
-                    {/* PREMIUM MATERIAL: Dark Violet Base + Bright Purple Glow */}
-                    <meshPhysicalMaterial 
-                        color="#2e1065"      // Deep Purple Base
-                        emissive="#8B5CF6"   // Your Brand Color Glow
-                        emissiveIntensity={1}
-                        metalness={0.9}      // Highly Metallic
-                        roughness={0.1}      // Polished
-                        clearcoat={1.0}      // Glass layer on top
-                    />
-                    
-                    {/* Wireframe Edges for Tech Look */}
-                    <Edges 
-                        threshold={15} 
-                        color="white" 
-                        scale={1.05} // Float slightly outside
-                        opacity={0.3}
-                        transparent
-                    />
-                </mesh>
+                <BarWithData key={i} index={i} />
             ))}
             
-            {/* Digital Floor Grid - Tuned to Purple/Grey */}
-            {/* args: [size, divisions, centerLineColor, gridColor] */}
             <gridHelper 
                 ref={floorRef}
                 args={[12, 24, 0x8B5CF6, 0x27272a]} 
                 position={[1.25, 0, 0]} 
             />
             
-            {/* Subtle Reflection Plane below */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[1.25, -0.01, 0]}>
                 <planeGeometry args={[12, 12]} />
                 <meshBasicMaterial color="#000000" opacity={0.8} transparent />
@@ -247,7 +272,6 @@ const DataEqualizer = () => {
         </group>
     );
 };
-
 
 // ------------------------------------------------------------------
 // COMPONENT: BENTO CARD WRAPPER
