@@ -12,114 +12,158 @@ import { motion } from 'framer-motion';
 const PortlyCTA = () => {
   const mountRef = useRef(null);
 
-  // --- Three.js Background Logic ---
-  useEffect(() => {
+// --- Three.js Background Logic ---
+useEffect(() => {
     if (!mountRef.current) return;
-
+  
     // Scene Setup
     const scene = new THREE.Scene();
-    // Using Portly 'Deepest Void' #0A0A0B as fog/base
-    scene.background = new THREE.Color('#0A0A0B'); 
-    scene.fog = new THREE.FogExp2('#0A0A0B', 0.002);
-
+    // Portly 'Deepest Void'
+    scene.background = new THREE.Color('#050505'); 
+    scene.fog = new THREE.FogExp2('#050505', 0.002);
+  
     const camera = new THREE.PerspectiveCamera(75, mountRef.current.clientWidth / mountRef.current.clientHeight, 0.1, 1000);
     camera.position.z = 50;
-    camera.position.y = 10;
-
+    camera.position.y = 5; // Slightly lower camera for grandeur
+  
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     mountRef.current.appendChild(renderer.domElement);
-
-    // Particle System (The Blinking Dots)
-    const particleCount = 2000;
+  
+    // --- Advanced Particle System ---
+    const particleCount = 2500; // Increased count slightly for density
     const geometry = new THREE.BufferGeometry();
+    
     const positions = new Float32Array(particleCount * 3);
-    const sizes = new Float32Array(particleCount);
-    const speeds = new Float32Array(particleCount);
-
+    const scales = new Float32Array(particleCount);
+    const randomness = new Float32Array(particleCount * 3); // For individual drift direction
+  
     for (let i = 0; i < particleCount; i++) {
-      // Create a grid-like distribution with some randomness
-      const x = (Math.random() - 0.5) * 150;
-      const z = (Math.random() - 0.5) * 100;
-      const y = (Math.random() - 0.5) * 40;
+      const i3 = i * 3;
       
-      positions[i * 3] = x;
-      positions[i * 3 + 1] = y;
-      positions[i * 3 + 2] = z;
-
-      sizes[i] = Math.random();
-      speeds[i] = Math.random();
+      // Spread them out more horizontally for a "landscape" feel
+      positions[i3] = (Math.random() - 0.5) * 180;
+      positions[i3 + 1] = (Math.random() - 0.5) * 60;
+      positions[i3 + 2] = (Math.random() - 0.5) * 120;
+  
+      scales[i] = Math.random();
+      
+      // Random factors for the shader animation
+      randomness[i3] = Math.random();
+      randomness[i3 + 1] = Math.random();
+      randomness[i3 + 2] = Math.random();
     }
-
+  
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
-    geometry.setAttribute('aSpeed', new THREE.BufferAttribute(speeds, 1));
-
-    // Custom Shader for the "Blink" effect
-    // Uses Portly Primary Violet: #8B5CF6
+    geometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 1));
+    geometry.setAttribute('aRandomness', new THREE.BufferAttribute(randomness, 3));
+  
+    // --- Premium Shader ---
     const material = new THREE.ShaderMaterial({
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      vertexColors: false,
       uniforms: {
         uTime: { value: 0 },
-        uColor: { value: new THREE.Color('#8B5CF6') },
+        uColor: { value: new THREE.Color('#8B5CF6') }, // Your Color Preserved
+        uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) }
       },
       vertexShader: `
-        attribute float aSize;
-        attribute float aSpeed;
-        varying float vOpacity;
         uniform float uTime;
+        uniform float uPixelRatio;
+        
+        attribute float aScale;
+        attribute vec3 aRandomness;
+        
+        varying float vAlpha;
+  
         void main() {
-          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-          gl_Position = projectionMatrix * mvPosition;
+          vec4 modelPosition = modelMatrix * vec4(position, 1.0);
           
-          // Blink logic based on time and random speed
-          float blink = sin(uTime * aSpeed * 2.0 + position.x);
-          vOpacity = smoothstep(0.0, 1.0, blink);
+          // Creative Logic: Add organic floating movement
+          // We use sine waves offset by the randomness attribute to make each particle move uniquely
+          float time = uTime * 0.5; // Slow down time for elegance
           
-          gl_PointSize = aSize * 4.0 * (30.0 / -mvPosition.z);
+          // Gentle "breathing" motion on Y axis
+          modelPosition.y += sin(time + modelPosition.x * 0.05) * 2.0 * aRandomness.y;
+          
+          // Subtle drift on X/Z
+          modelPosition.x += cos(time * 0.3 + aRandomness.z * 10.0) * 0.5;
+          
+          vec4 viewPosition = viewMatrix * modelPosition;
+          vec4 projectedPosition = projectionMatrix * viewPosition;
+  
+          gl_Position = projectedPosition;
+  
+          // Dynamic Size: Particles pulse in size based on time
+          float sizePulse = 1.0 + sin(uTime * 2.0 + aRandomness.x * 100.0) * 0.3;
+          
+          gl_PointSize = 150.0 * aScale * sizePulse * uPixelRatio;
+          gl_PointSize *= (1.0 / -viewPosition.z); // Scale by distance (perspective)
+  
+          // Pass alpha to fragment
+          // Particles further away fade out slightly more
+          vAlpha = smoothstep(50.0, 0.0, -viewPosition.z);
         }
       `,
       fragmentShader: `
         uniform vec3 uColor;
-        varying float vOpacity;
+        varying float vAlpha;
+  
         void main() {
-          // Circular particle
-          float r = distance(gl_PointCoord, vec2(0.5));
-          if (r > 0.5) discard;
-          
-          // Glow effect
-          float glow = 1.0 - (r * 2.0);
-          glow = pow(glow, 1.5);
-
-          gl_FragColor = vec4(uColor, vOpacity * glow);
+          // Create a soft glowing circle (no hard edges)
+          float distanceToCenter = distance(gl_PointCoord, vec2(0.5));
+          float strength = 0.05 / distanceToCenter - 0.1; // Glow formula
+  
+          gl_FragColor = vec4(uColor, strength * vAlpha);
         }
       `,
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      transparent: true
     });
-
+  
     const particles = new THREE.Points(geometry, material);
     scene.add(particles);
-
-    // Animation Loop
+  
+    // --- Interaction: Mouse Parallax ---
+    let mouseX = 0;
+    let mouseY = 0;
+  
+    const handleMouseMove = (event) => {
+      mouseX = event.clientX / window.innerWidth - 0.5;
+      mouseY = event.clientY / window.innerHeight - 0.5;
+    };
+  
+    window.addEventListener('mousemove', handleMouseMove);
+  
+    // --- Animation Loop ---
     const clock = new THREE.Clock();
     let animationId;
-
+  
     const animate = () => {
       animationId = requestAnimationFrame(animate);
       const elapsedTime = clock.getElapsedTime();
-
+  
+      // Update Shader Time
       material.uniforms.uTime.value = elapsedTime;
+  
+      // Smooth Camera/Scene Rotation based on Mouse (Parallax)
+      // This creates the "3D depth" feeling when you move your mouse
+      const targetRotationX = mouseY * 0.1;
+      const targetRotationY = mouseX * 0.1;
       
-      // Gentle rotation
-      particles.rotation.y = elapsedTime * 0.05;
-
+      // Linear interpolation for smoothness (Lag effect)
+      scene.rotation.x += (targetRotationX - scene.rotation.x) * 0.05;
+      scene.rotation.y += (targetRotationY - scene.rotation.y) * 0.05;
+      
+      // Continuous gentle rotation override
+      scene.rotation.y += 0.001; 
+  
       renderer.render(scene, camera);
     };
-
+  
     animate();
-
+  
     // Resize Handler
     const handleResize = () => {
       if (!mountRef.current) return;
@@ -128,13 +172,18 @@ const PortlyCTA = () => {
       
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
+      
       renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      
+      material.uniforms.uPixelRatio.value = Math.min(window.devicePixelRatio, 2);
     };
-
+  
     window.addEventListener('resize', handleResize);
-
+  
     // Cleanup
     return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
       if (mountRef.current && renderer.domElement) {
@@ -147,7 +196,7 @@ const PortlyCTA = () => {
   }, []);
 
   return (
-    <section className="relative w-full py-24 overflow-hidden bg-[#0A0A0B]">
+    <section className="relative w-full py-24 overflow-hidden bg-[#050505]">
       {/* Three.js Background Layer */}
       <div ref={mountRef} className="absolute inset-0 z-0 pointer-events-none opacity-60" />
 
@@ -173,21 +222,6 @@ const PortlyCTA = () => {
 
           {/* Inner Content Padding */}
           <div className="flex flex-col items-center justify-center px-6 py-20 text-center md:px-12 md:py-24 relative">
-
-            {/* --- Central Content --- */}
-
-            {/* Top Tagline */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full border border-[#7C3AED]/30 bg-[#7C3AED]/10"
-            >
-              <BsStars className="text-[#A78BFA] animate-pulse" />
-              <span className="text-sm font-medium text-[#E5E7EB]">Start with Portly today!</span>
-              <BsStars className="text-[#A78BFA] animate-pulse" />
-            </motion.div>
-
             {/* Headline */}
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -244,11 +278,6 @@ const PortlyCTA = () => {
               transition={{ delay: 0.5 }}
               className="mt-8 flex items-center gap-2 text-sm text-[#9CA3AF]"
             >
-              <div className="flex -space-x-2">
-                {[1,2,3].map(i => (
-                  <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-br from-[#8B5CF6] to-[#A78BFA] border-2 border-[#121214]" />
-                ))}
-              </div>
               <span>Trusted by 1,400+ Active Portfolios</span>
             </motion.div>
 
