@@ -20,7 +20,7 @@ const features = [
     description: "Experience an industry-standard interface designed for clarity. Monitor asset performance, track yield metrics, and visualize your portfolio growth with banking-grade precision.",
     color: "#8B5CF6", // Violet
     stat: "LATENCY: 12ms",
-    image: "https://placehold.co/800x600/1a1a1a/8B5CF6?text=Dashboard+UI", // Replace with your image
+    image: "/slider/1.png", 
     icon: RiDashboardFill
   },
   {
@@ -30,7 +30,7 @@ const features = [
     description: "Our AI Chatbot doesn't just talk; it reads. It analyzes your connected wallet status to provide personalized trading strategies, risk assessments, and portfolio rebalancing suggestions in real-time.",
     color: "#0EA5E9", // Sky Blue
     stat: "MODEL: GPT-4o",
-    image: "https://placehold.co/800x600/1a1a1a/0EA5E9?text=AI+Interface", // Replace with your image
+    image: "/slider/2.png",
     icon: RiBrainLine
   },
   {
@@ -40,7 +40,7 @@ const features = [
     description: "Stop losing margins to network costs. We subsidize the gas so you can trade freely. Experience a truly frictionless financial ecosystem where 100% of your capital goes into your investment.",
     color: "#10B981", // Emerald
     stat: "COST: $0.00",
-    image: "https://placehold.co/800x600/1a1a1a/10B981?text=Zero+Fees", // Replace with your image
+    image: "/slider/3.png",
     icon: RiExchangeDollarLine
   },
   {
@@ -50,7 +50,7 @@ const features = [
     description: "Turn engagement into equity. Complete simple social and protocol tasks to earn tokens. Rewards are verified on-chain and dropped directly into your connected wallet instantly.",
     color: "#F59E0B", // Amber
     stat: "PAYOUT: INSTANT",
-    image: "https://placehold.co/800x600/1a1a1a/F59E0B?text=Rewards+System", // Replace with your image
+    image: "/slider/4.png",
     icon: FaCoins
   }
 ];
@@ -86,15 +86,6 @@ export default function LuxuryFeatureSlider() {
         
         {/* Section Header */}
         <div className="mb-16 md:mb-24">
-           <motion.div 
-             initial={{ opacity: 0, y: 20 }}
-             whileInView={{ opacity: 1, y: 0 }}
-             viewport={{ once: true }}
-             className="flex items-center gap-2 mb-4"
-           >
-             <RiVipDiamondFill className="text-[#8B5CF6]" />
-             <span className="text-xs font-mono text-[#8B5CF6] tracking-[0.2em] uppercase">Core Architecture</span>
-           </motion.div>
            <motion.h2 
              initial={{ opacity: 0, y: 20 }}
              whileInView={{ opacity: 1, y: 0 }}
