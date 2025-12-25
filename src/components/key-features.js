@@ -61,7 +61,7 @@ const AUTOPLAY_DURATION = 6000; // 6 seconds per slide
 export default function LuxuryFeatureSlider() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const progressBarRef = useRef<HTMLDivElement>(null);
+  const progressBarRef = useRef(null);
 
   // Auto-rotate logic
   useEffect(() => {
