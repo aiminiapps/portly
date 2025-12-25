@@ -220,7 +220,7 @@ useEffect(() => {
         />
 
           {/* Inner Content Padding */}
-          <div className="flex flex-col items-center justify-center px-6 py-20 text-center md:px-12 md:py-24 relative">
+          <div className="flex flex-col items-center justify-center px-4 py-16 text-center md:px-10 md:py-20 relative">
             {/* Headline */}
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -229,9 +229,9 @@ useEffect(() => {
               transition={{ delay: 0.1 }}
               className="text-4xl md:text-6xl font-bold tracking-tight text-white mb-6"
             >
-              Transform Data into <br className="hidden md:block" />
-              <span className="bg-gradient-to-r from-[#FFFFFF] via-[#A78BFA] to-[#8B5CF6] bg-clip-text text-transparent">
-                Wealth Intelligence
+             Smarter Tracking, <br className="hidden md:block" />
+              <span className="text-[#8B5CF6]">
+              Real Rewards
               </span>
             </motion.h2>
 
@@ -241,10 +241,9 @@ useEffect(() => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="max-w-2xl text-lg text-[#9CA3AF] mb-10 leading-relaxed"
+              className="max-w-2xl text-sm sm:text-lg text-balance text-[#9CA3AF] mb-10 leading-relaxed"
             >
-              Connect your wallet to visualize assets across chains, get instant AI risk analysis, 
-              and earn native PTLY tokens by completing missions. No setup, no stress.
+            Visualize your entire portfolio in one place and earn PTLY tokens just for completing missions. No complex setup just connect and grow.
             </motion.p>
 
             {/* CTA Buttons */}
