@@ -10,6 +10,7 @@ import {
   RiVipDiamondFill
 } from "react-icons/ri";
 import { FaCoins } from "react-icons/fa";
+import Link from "next/link";
 
 // --- FEATURE DATA ---
 const features = [
@@ -85,15 +86,15 @@ export default function LuxuryFeatureSlider() {
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         
         {/* Section Header */}
-        <div className="mb-16 md:mb-24">
+        <div className="sm:mb-16 mb-7">
            <motion.h2 
              initial={{ opacity: 0, y: 20 }}
              whileInView={{ opacity: 1, y: 0 }}
              viewport={{ once: true }}
              transition={{ delay: 0.1 }}
-             className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight"
+             className="text-3xl md:text-5xl sm:text-left text-center lg:text-6xl font-bold text-white tracking-tight"
            >
-             Precision in <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/50">Every Pixel.</span>
+             Precision in <span className="text-[#8B5CF6]">Every Pixel</span>
            </motion.h2>
         </div>
 
@@ -114,7 +115,7 @@ export default function LuxuryFeatureSlider() {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeFeature.id}
-                  initial={{ opacity: 0, scale: 1.1 }}
+                  initial={{ opacity: 0, scale: 1 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.7, ease: "easeOut" }}
@@ -124,7 +125,7 @@ export default function LuxuryFeatureSlider() {
                    <img 
                      src={activeFeature.image} 
                      alt={activeFeature.title}
-                     className="w-full h-full object-cover opacity-90"
+                     className="w-full h-full object-cover opacity-100"
                    />
                    
                    {/* Dynamic Color Overlay (Subtle Tint) */}
@@ -134,14 +135,6 @@ export default function LuxuryFeatureSlider() {
                    />
                 </motion.div>
               </AnimatePresence>
-
-              {/* Status Badge on Image */}
-              <div className="absolute bottom-6 left-6 z-30 flex items-center gap-3">
-                 <div className="h-10 px-4 bg-black/40 backdrop-blur-md border border-white/10 rounded-full flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: activeFeature.color }} />
-                    <span className="text-[10px] text-white font-mono uppercase tracking-widest">Live Preview</span>
-                 </div>
-              </div>
 
             </div>
           </div>
@@ -159,7 +152,7 @@ export default function LuxuryFeatureSlider() {
               >
                 {/* Feature Icon & Tag */}
                 <div 
-                  className="inline-flex items-center gap-3 px-3 py-1.5 rounded-full mb-8 border backdrop-blur-sm"
+                  className="sm:inline-flex hidden items-center gap-3 px-3 py-1.5 rounded-full mb-8 border backdrop-blur-sm"
                   style={{ 
                     borderColor: `${activeFeature.color}30`,
                     backgroundColor: `${activeFeature.color}08` 
@@ -172,12 +165,12 @@ export default function LuxuryFeatureSlider() {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-[1.1]">
+                <h3 className="text-xl md:text-5xl font-bold text-white/90 sm:mb-6 mb-3.5 leading-[1.1]">
                    {activeFeature.title}
                 </h3>
 
                 {/* Description */}
-                <p className="text-[#9CA3AF] text-base md:text-lg leading-relaxed mb-8 font-light">
+                <p className="text-[#9CA3AF] text-sm md:text-lg leading-relaxed mb-8 font-light">
                    {activeFeature.description}
                 </p>
 
@@ -195,9 +188,11 @@ export default function LuxuryFeatureSlider() {
                       </div>
                    </div>
                    
-                   <button className="group w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300">
+                    <Link href='/ai'>
+                    <button className="group w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300">
                       <RiArrowRightLine className="text-xl group-hover:rotate-[-45deg] transition-transform duration-300" />
                    </button>
+                    </Link>
                 </div>
 
               </motion.div>
