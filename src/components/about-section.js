@@ -17,6 +17,7 @@ import {
   Plane
 } from "@react-three/drei";
 import * as THREE from "three";
+import { Edges } from '@react-three/drei';
 import * as random from "maath/random/dist/maath-random.esm";
 
 // --- STRICTLY REQUESTED REACT-ICONS ---
@@ -172,37 +173,77 @@ const DataEqualizer = () => {
 
     useFrame((state) => {
         const t = state.clock.getElapsedTime();
-        // Animate Bars
+        
+        // Animate Bars - Slower, more organic wave
         bars.current.forEach((bar, i) => {
             if (bar) {
-                const scaleY = 0.5 + Math.abs(Math.sin(t * 3 + i * 0.5)) * 1.5;
-                bar.scale.y = scaleY;
-                bar.position.y = scaleY / 2;
-                bar.material.emissiveIntensity = scaleY * 0.8;
+                // Reduced speed (t * 1.2) and added a complex wave for variety
+                const wave = Math.sin(t * 1.2 + i * 0.8);
+                const scaleY = 0.8 + Math.abs(wave) * 1.5; // Taller minimum height
+                
+                // Smooth interpolation for physics-like movement
+                bar.scale.y = THREE.MathUtils.lerp(bar.scale.y, scaleY, 0.1);
+                bar.position.y = bar.scale.y / 2;
+                
+                // Dynamic Glow: Brighter when tall
+                bar.material.emissiveIntensity = 0.5 + Math.abs(wave) * 1.5;
             }
         });
-        // Scroll Floor Texture
+
+        // Scroll Floor Grid slowly
         if(floorRef.current) {
-            floorRef.current.position.z = (t * 0.5) % 1;
+            floorRef.current.position.z = (t * 0.2) % 1; // Slow constant flow
         }
     });
 
     return (
-        <group position={[-1, -1, 0]}>
+        <group position={[-1.2, -1.5, 0]}>
+            {/* Ambient Purple Light for the base */}
+            <pointLight position={[2, 2, 2]} intensity={2} color="#8B5CF6" distance={5} />
+
             {/* Server Rack Bars */}
             {[...Array(6)].map((_, i) => (
                 <mesh 
                     key={i} 
                     ref={el => bars.current[i] = el} 
-                    position={[i * 0.4, 0, 0]}
+                    position={[i * 0.5, 0, 0]} // Slightly wider spacing
                 >
-                    <boxGeometry args={[0.25, 1, 0.25]} />
-                    <meshStandardMaterial color="#10B981" emissive="#059669" metalness={0.8} roughness={0.2} />
+                    <boxGeometry args={[0.3, 1, 0.3]} />
+                    
+                    {/* PREMIUM MATERIAL: Dark Violet Base + Bright Purple Glow */}
+                    <meshPhysicalMaterial 
+                        color="#2e1065"      // Deep Purple Base
+                        emissive="#8B5CF6"   // Your Brand Color Glow
+                        emissiveIntensity={1}
+                        metalness={0.9}      // Highly Metallic
+                        roughness={0.1}      // Polished
+                        clearcoat={1.0}      // Glass layer on top
+                    />
+                    
+                    {/* Wireframe Edges for Tech Look */}
+                    <Edges 
+                        threshold={15} 
+                        color="white" 
+                        scale={1.05} // Float slightly outside
+                        opacity={0.3}
+                        transparent
+                    />
                 </mesh>
             ))}
             
-            {/* Digital Floor Grid */}
-            <gridHelper args={[10, 20, 0x10B981, 0x064E3B]} position={[1, 0, 0]} />
+            {/* Digital Floor Grid - Tuned to Purple/Grey */}
+            {/* args: [size, divisions, centerLineColor, gridColor] */}
+            <gridHelper 
+                ref={floorRef}
+                args={[12, 24, 0x8B5CF6, 0x27272a]} 
+                position={[1.25, 0, 0]} 
+            />
+            
+            {/* Subtle Reflection Plane below */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[1.25, -0.01, 0]}>
+                <planeGeometry args={[12, 12]} />
+                <meshBasicMaterial color="#000000" opacity={0.8} transparent />
+            </mesh>
         </group>
     );
 };
