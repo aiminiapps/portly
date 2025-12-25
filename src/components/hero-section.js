@@ -19,6 +19,7 @@ import {
   RiPulseLine,
   RiGlobalLine
 } from "react-icons/ri";
+import Image from "next/image";
 
 // --- THEME CONSTANTS ---
 const COLORS = {
@@ -114,17 +115,13 @@ const Navbar = () => {
         animate={{ y: 0 }}
         transition={{ duration: 0.8, ease: "circOut" }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled || mobileMenuOpen ? "py-4 bg-[#0A0A0B]/80 backdrop-blur-xl border-b border-white/5 shadow-lg" : "py-6 bg-transparent"
+          scrolled || mobileMenuOpen ? "py-4 bg-[#0A0A0B]/80 backdrop-blur-xl border- border-white/5 shadow-lg" : "py-6 bg-transparent"
         }`}
       >
         <div className="container mx-auto px-6 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2 cursor-pointer z-50 relative group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#0A0A0B] flex items-center justify-center border border-white/10 group-hover:border-[#A78BFA]/50 transition-all shadow-[0_0_15px_-3px_rgba(139,92,246,0.3)] group-hover:shadow-[0_0_20px_0px_rgba(139,92,246,0.5)]">
-              {/* Premium Icon: Flashlight Fill */}
-              <RiFlashlightFill className="text-white w-5 h-5" />
-            </div>
-            <span className="text-xl font-bold text-white tracking-wide">PORTLY<span className="text-[#A78BFA]">.AI</span></span>
+          <Image src='/logo.png' alt='logo' width={150} height={60}/>
           </div>
 
           {/* Desktop Links */}
