@@ -341,20 +341,6 @@ export default function Hero() {
 
       {/* 3. Main Content Area */}
       <div className="relative z-20 flex flex-col items-center justify-center min-h-screen px-4 pt-20 text-center">
-        
-        {/* Animated Badge */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="inline-flex items-center gap-2 px-5 py-2 mb-8 rounded-full bg-[#1E1E24]/60 border border-[#8B5CF6]/30 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(139,92,246,0.2)] hover:border-[#8B5CF6]/50 transition-colors cursor-default"
-        >
-          {/* Premium Icon: Sparkling Fill */}
-          <RiSparklingFill className="text-[#A78BFA] w-3 h-3" />
-          <span className="text-xs font-bold tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-white to-[#C4B5FD] uppercase">
-            Intelligent Wealth
-          </span>
-        </motion.div>
 
         <motion.h1 
           initial={{ opacity: 0, y: 30 }}
