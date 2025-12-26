@@ -145,133 +145,114 @@ const CHAINS = [
     { name: 'MATIC', color: '#8247E5', url: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/info/logo.png' },
   ];
   
-  const ChainNode = ({ data, index, total }) => {
-      // Load texture for this specific chain
-      const texture = useTexture(data.url);
-      
-      // Calculate Position in a circle
-      const angle = (index / total) * Math.PI * 2;
-      const radius = 2.4;
-      const x = Math.cos(angle) * radius;
-      const z = Math.sin(angle) * radius; // On XZ plane
+  // --- 1. BINARY DATA (Inside the Glass Core) ---
+  const BinaryData = ({ count = 20 }) => {
+    const data = useMemo(() => new Array(count).fill(0).map(() => ({
+        pos: [(Math.random()-0.5)*0.8, (Math.random()-0.5)*0.8, (Math.random()-0.5)*0.8],
+        val: Math.random() > 0.5 ? '1' : '0',
+        color: Math.random() > 0.5 ? '#A78BFA' : '#ffffff',
+        speed: 0.2 + Math.random() * 0.5
+    })), [count]);
   
+    return (
+      <group>
+        {data.map((bit, i) => (
+          <Float key={i} speed={bit.speed} rotationIntensity={0.5} floatIntensity={0.5}>
+              <Text position={bit.pos} fontSize={0.1} color={bit.color} anchorX="center" anchorY="middle">
+                  {bit.val}
+              </Text>
+          </Float>
+        ))}
+      </group>
+    );
+  };
+  
+  // --- 2. THE GLASS CORE (Square Container) ---
+  const CentralGlassCore = () => {
       return (
-          <group position={[x, 0, z]}>
-              {/* 1. The Icon Billboard (Always faces camera) */}
-              <Billboard follow={true} lockX={false} lockY={false} lockZ={false}>
-                  <mesh>
-                      <circleGeometry args={[0.35, 32]} />
-                      <meshBasicMaterial map={texture} transparent />
-                  </mesh>
-                  {/* Glow Halo behind the icon */}
-                  <mesh position={[0, 0, -0.05]}>
-                      <circleGeometry args={[0.38, 32]} />
-                      <meshBasicMaterial color={data.color} transparent opacity={0.5} />
-                  </mesh>
-              </Billboard>
-  
-              {/* 2. Label Text */}
-              <Billboard position={[0, -0.5, 0]}>
-                  <Text fontSize={0.2} color="white" font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff">
-                      {data.name}
-                  </Text>
-              </Billboard>
-  
-              {/* 3. Connecting Pipe to Center (The Network Mesh) */}
-              <mesh 
-                  // Position is halfway between this node (0,0,0 relative) and center (-x, 0, -z)
-                  position={[-x/2, 0, -z/2]} 
-                  rotation={[0, -angle, Math.PI / 2]}
-              >
-                  <cylinderGeometry args={[0.03, 0.03, radius, 8]} />
-                  <meshStandardMaterial 
-                      color="#8B5CF6" // Portly Purple connection
-                      emissive="#4C1D95"
-                      transparent 
-                      opacity={0.4} 
+          <group>
+              {/* Glass Box */}
+              <mesh>
+                  <boxGeometry args={[1.1, 1.1, 1.1]} />
+                  <meshPhysicalMaterial 
+                      color="#ffffff"
+                      transmission={0.6}
+                      roughness={0.2}
+                      metalness={0}
+                      ior={1.5}
+                      thickness={1.5}
+                      clearcoat={1}
+                      attenuationColor="#A78BFA"
+                      attenuationDistance={1}
                   />
               </mesh>
-  
-              {/* 4. Moving Data Particle (Visualizing "Working Together") */}
-              <DataPulse radius={radius} angle={angle} color={data.color} />
+              {/* Wireframe Edge */}
+              <mesh>
+                  <boxGeometry args={[1.12, 1.12, 1.12]} />
+                  <meshBasicMaterial color="#7C3AED" wireframe opacity={0.2} transparent />
+              </mesh>
+              {/* Binary Fill */}
+              <BinaryData count={30} />
           </group>
       );
   };
   
-  // Helper: A small particle traveling from the chain to the center
-  const DataPulse = ({ radius, angle, color }) => {
-      const ref = useRef();
-      useFrame(({ clock }) => {
-          const t = (clock.getElapsedTime() * 0.8) % 1; // Speed 0.8
-          // Move from outer radius (0) to center (-radius)
-          // We are inside the group, so local 0 is the node. Center is -x, -z
-          // Simple linear interpolation for the visual effect along the connection line
-          if(ref.current) {
-               // We just slide it along the negative X axis relative to the group rotation? 
-               // Actually easier to just interpolate world positions, but for simplicity:
-               // Let's just animate strictly along the pipe path we built.
-               // The pipe is rotated, so we move locally along X? No, let's use the parent's math.
-               
-               // Re-calculating local movement towards [0,0,0] world (which is [-x, 0, -z] local)
-               const dist = t * radius;
-               ref.current.position.x = -Math.cos(0) * dist; // Move inwards
-               ref.current.position.z = -Math.sin(0) * dist; // (Relative to the rotated group parent, this simplifies to just moving towards center)
-               
-               // Pulse opacity
-               ref.current.material.opacity = 1 - t; // Fade out as it hits the core
-          }
-      });
+  // --- 3. MOVING PARTICLES (Renamed from DataPulse/OrbitingSynapse) ---
   
-      // We need to counteract the parent group's position to move towards world center.
-      // Actually, simpler math: The pipe is drawn from Node -> Center. 
-      // We just move a sphere from (0,0,0) to (-x, 0, -z).
+  const ChainNode = ({ data, index, total }) => {
+      const texture = useTexture(data.url);
+      const angle = (index / total) * Math.PI * 2;
+      const radius = 1.6; // Reduced radius to fit in view
       const x = Math.cos(angle) * radius;
       const z = Math.sin(angle) * radius;
   
       return (
-          <mesh ref={ref} position={[0,0,0]}> 
-              {/* We cheat slightly by positioning it absolutely relative to the node group but moving it towards world center */}
-              <sphereGeometry args={[0.06, 8, 8]} />
-              <meshBasicMaterial color={color} />
-          </mesh>
+          <group position={[x, 0, z]}>
+              {/* Icon */}
+              <Billboard follow={true}>
+                  <mesh>
+                      <circleGeometry args={[0.25, 32]} />
+                      <meshBasicMaterial map={texture} transparent />
+                  </mesh>
+                  <mesh position={[0, 0, -0.02]}>
+                      <circleGeometry args={[0.28, 32]} />
+                      <meshBasicMaterial color={data.color} transparent opacity={0.5} />
+                  </mesh>
+              </Billboard>
+  
+              {/* Label */}
+              <Billboard position={[0, -0.35, 0]}>
+                  <Text fontSize={0.15} color="white" outlineWidth={0.01} outlineColor="black">
+                      {data.name}
+                  </Text>
+              </Billboard>
+  
+              {/* Pipe to Center */}
+              <mesh position={[-x/2, 0, -z/2]} rotation={[0, -angle, Math.PI / 2]}>
+                  <cylinderGeometry args={[0.02, 0.02, radius, 8]} />
+                  <meshStandardMaterial color="#8B5CF6" emissive="#4C1D95" transparent opacity={0.3} />
+              </mesh>
+          </group>
       );
-  }
+  };
   
-  
-  const ConnectedNodes = () => {
+  // --- 5. MAIN COMPONENT (Export this) ---
+  const MultiChainNexus = () => {
       const group = useRef();
       
       useFrame((state) => {
           const t = state.clock.getElapsedTime();
           if (group.current) {
-              // Gentle rotation of the entire ecosystem
-              group.current.rotation.y = t * 0.15;
-              // Subtle tilt breathing
-              group.current.rotation.z = Math.sin(t * 0.3) * 0.05;
+              group.current.rotation.y = t * 0.1; // Gentle rotation
           }
       });
   
       return (
-          <group ref={group} rotation={[0.2, 0, 0]}>
-              {/* Central Hub: PORTLY AI Core */}
-              <Sphere args={[0.9, 64, 64]}>
-                  <MeshDistortMaterial 
-                      color="#6D28D9" 
-                      emissive="#4C1D95"
-                      emissiveIntensity={1}
-                      speed={2} 
-                      distort={0.3} 
-                      roughness={0.1} 
-                      metalness={0.9} 
-                  />
-              </Sphere>
-  
-              {/* Render Each Chain Node */}
+          <group ref={group} rotation={[0.2, 0, 0]}> {/* Slight tilt to see depth */}
+              <CentralGlassCore />
               {CHAINS.map((chain, i) => (
                   <ChainNode key={chain.name} data={chain} index={i} total={CHAINS.length} />
               ))}
-              
-              {/* Center Glow */}
               <pointLight distance={3} intensity={2} color="#8B5CF6" />
           </group>
       );
@@ -662,8 +643,8 @@ export default function AboutSection() {
           >
              <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
                 <Suspense fallback={null}>
-                    <Environment preset="city" />
-                    <ConnectedNodes />
+                    {/* <Environment preset="city" /> */}
+                    <MultiChainNexus/>
                     <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={2} enablePan={false} />
                 </Suspense>
              </Canvas>
