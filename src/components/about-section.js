@@ -9,34 +9,24 @@ import {
   Float, 
   Sphere, 
   MeshDistortMaterial, 
-  Torus,
   Cylinder,
   OrbitControls,
   Environment,
-  Sparkles,
-  Plane
+  Sparkles
 } from "@react-three/drei";
-import { PiEngineBold } from "react-icons/pi";
+import { PiEngineBold, PiTrophy } from "react-icons/pi";
+import { IoLayersOutline } from "react-icons/io5";
 import * as THREE from "three";
 import { Edges, Text, useTexture, Billboard } from '@react-three/drei';
 import * as random from "maath/random/dist/maath-random.esm";
 
-// --- STRICTLY REQUESTED REACT-ICONS ---
 import { 
-  FaWallet, 
-  FaTrophy, 
-  FaLayerGroup, 
   FaArrowRight, 
-  FaBolt, 
-  FaEthereum,
-  FaNetworkWired
+  FaEthereum
 } from "react-icons/fa";
-import { SiSolana, SiBinance, SiPolygon } from "react-icons/si";
-import { MdSecurity, MdSpeed, MdAutoGraph } from "react-icons/md";
+import { SiSolana, SiPolygon } from "react-icons/si";
+import { MdSpeed, MdAutoGraph } from "react-icons/md";
 
-// ------------------------------------------------------------------
-// 3D SCENE 1: AI NEURAL BRAIN (Particles + Core)
-// ------------------------------------------------------------------
 const NeuralBrain = (props) => {
   const ref = useRef();
   const shellRef = useRef();
@@ -479,10 +469,10 @@ const BentoCard = ({ children, className = "", title, subtitle, icon: Icon, dela
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             transition={{ duration: 0.6, delay, ease: "easeOut" }}
-            className={`group relative overflow-hidden rounded-3xl bg-[#0F0F11] border border-white/5 shadow-xl ${className}`}
+            className={`group relative overflow-hidden rounded-3xl bg-[#09090b] border border-white/5 shadow-xl ${className}`}
         >
-            {/* Background Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#18181B] to-[#0A0A0B] z-0" />
+            <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,_#8B5CF608,_transparent_70%)] pointer-events-none" />
+
             
             {/* Animated Border Glow */}
             <div className="absolute inset-0 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-[radial-gradient(800px_circle_at_var(--mouse-x)_var(--mouse-y),rgba(139,92,246,0.15),transparent_40%)]" />
@@ -498,7 +488,7 @@ const BentoCard = ({ children, className = "", title, subtitle, icon: Icon, dela
                 </div>
 
                 {/* Subtitle */}
-                <p className="text-[#A1A1AA] text-sm  mb-6 font-medium">
+                <p className="text-[#A1A1AA] text-sm  mb-6">
                     {subtitle}
                 </p>
 
@@ -631,7 +621,7 @@ export default function AboutSection() {
             className="md:col-span-1 min-h-[300px]"
             title="Unified Liquidity"
             subtitle="A single glass pane for Ethereum, Solana, and Polygon."
-            icon={FaLayerGroup}
+            icon={IoLayersOutline}
             delay={0.3}
             overlayContent={
                 <div className="absolute bottom-4 w-full flex justify-center gap-6 text-white/30">
@@ -655,12 +645,12 @@ export default function AboutSection() {
             className="md:col-span-1 min-h-[300px]"
             title="P2E Rewards"
             subtitle="Complete missions to earn $PTLY tokens."
-            icon={FaTrophy}
+            icon={PiTrophy}
             delay={0.4}
             overlayContent={
                 <div className="absolute top-4 left-4">
                      <div className="bg-[#F59E0B]/10 border border-[#F59E0B]/20 px-3 py-1 rounded-full flex items-center gap-1.5">
-                        <FaTrophy className="text-[#F59E0B] w-3 h-3" />
+                        <PiTrophy className="text-[#F59E0B] w-3 h-3" />
                         <span className="text-[10px] font-bold text-[#F59E0B]">+500 PTLY</span>
                      </div>
                 </div>
