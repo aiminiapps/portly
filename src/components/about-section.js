@@ -16,13 +16,13 @@ import {
   Sparkles,
   Plane
 } from "@react-three/drei";
+import { PiEngineBold } from "react-icons/pi";
 import * as THREE from "three";
-import { Edges, Text, Box, Line, useTexture, Billboard } from '@react-three/drei';
+import { Edges, Text, useTexture, Billboard } from '@react-three/drei';
 import * as random from "maath/random/dist/maath-random.esm";
 
 // --- STRICTLY REQUESTED REACT-ICONS ---
 import { 
-  FaBrain, 
   FaWallet, 
   FaTrophy, 
   FaLayerGroup, 
@@ -492,13 +492,13 @@ const BentoCard = ({ children, className = "", title, subtitle, icon: Icon, dela
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-4">
                     <div className="w-10 h-10 rounded-lg bg-[#27272A] border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:bg-[#8B5CF6]/20 group-hover:border-[#8B5CF6]/50 transition-all duration-300">
-                        <Icon size={18} className="text-[#A78BFA] group-hover:text-white" />
+                        <Icon size={22} className="text-[#A78BFA] group-hover:text-white" />
                     </div>
-                    <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-[#A78BFA] transition-colors">{title}</h3>
+                    <h3 className="text-xl font-semibold text-white tracking-tight group-hover:text-[#A78BFA] transition-colors">{title}</h3>
                 </div>
 
                 {/* Subtitle */}
-                <p className="text-[#A1A1AA] text-sm leading-relaxed mb-6 font-medium">
+                <p className="text-[#A1A1AA] text-sm  mb-6 font-medium">
                     {subtitle}
                 </p>
 
@@ -567,7 +567,7 @@ export default function AboutSection() {
             className="md:col-span-2 min-h-[350px]"
             title="Sentient AI Engine"
             subtitle="Deep learning models analyze market sentiment and on-chain volume in real-time."
-            icon={FaBrain}
+            icon={PiEngineBold}
             delay={0.1}
             overlayContent={
                <div className="absolute top-4 right-4 bg-[#0A0A0B]/80 border border-white/10 px-3 py-1.5 rounded-lg flex items-center gap-3 backdrop-blur-md z-10">
