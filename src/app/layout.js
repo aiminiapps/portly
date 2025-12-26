@@ -160,7 +160,7 @@ export default function RootLayout({ children }) {
       >
         {children}
       </body>
-      <GoogleAnalytics gaId="" />//ga id is panding
+      <GoogleAnalytics gaId="" />
     </html>
   );
 }
