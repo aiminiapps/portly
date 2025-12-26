@@ -22,7 +22,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
-// --- THEME CONSTANTS ---
 const COLORS = {
   primary: "#8B5CF6",
   deep: "#7C3AED",
@@ -35,41 +34,6 @@ const COLORS = {
   textMuted: "#9CA3AF"
 };
 
-// --- 3D COMPONENTS ---
-
-// 1. The Living Core (Liquid Sphere)
-const LiquidCore = () => {
-  const meshRef = useRef();
-  
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    if(meshRef.current) {
-      meshRef.current.distort = 0.35 + Math.sin(t * 0.4) * 0.12; 
-    }
-  });
-
-  return (
-    <Float speed={1.5} rotationIntensity={0.4} floatIntensity={0.6}>
-      <Sphere ref={meshRef} args={[1, 256, 256]} scale={1.6}>
-        <MeshDistortMaterial
-          color="#11052C" 
-          emissive={COLORS.primary}
-          emissiveIntensity={0.2} 
-          roughness={0.15} 
-          metalness={0.95} 
-          distort={0.4}
-          speed={1.5}
-          reflectivity={1}
-          clearcoat={1}
-          clearcoatRoughness={0.1}
-          envMapIntensity={1.2} 
-        />
-      </Sphere>
-    </Float>
-  );
-};
-
-// 2. Background Particles
 const DataNet = () => {
   const groupRef = useRef();
   
@@ -361,8 +325,6 @@ export default function Hero() {
             <ambientLight intensity={0.2} />
             <spotLight position={[10, 10, 10]} angle={0.5} penumbra={1} intensity={2} color="#C4B5FD" />
             <pointLight position={[-10, -5, -10]} intensity={1} color="#7C3AED" />
-            
-            <LiquidCore />
             <DataNet />
             
             <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.8} maxPolarAngle={Math.PI/1.8} minPolarAngle={Math.PI/2.2} />
