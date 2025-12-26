@@ -92,7 +92,7 @@ const Navbar = () => {
         animate={{ y: 0 }}
         transition={{ duration: 0.8, ease: "circOut" }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled || mobileMenuOpen ? "py-4 bg-[#0A0A0B]/80 backdrop-blur-xl border-b border-white/5 shadow-lg" : "py-6 bg-transparent"
+          scrolled || mobileMenuOpen ? "py-4 bg-[#0A0A0B]/80 backdrop-blur-xl shadow-lg" : "py-6 bg-transparent"
         }`}
       >
         <div className="container mx-auto px-6 flex items-center justify-between">
@@ -102,14 +102,14 @@ const Navbar = () => {
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-8 bg-white/10 px-8 py-3 rounded-full border border-white/5 backdrop-blur-lg shadow-inner hover:border-white/10 transition-colors">
+          <div className="hidden md:flex items-center gap-8 bg-black/10 px-8 py-3 rounded-full border border-white/5 backdrop-blur-lg shadow-inner hover:border-white/10 transition-colors">
           {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
                 target={link.external ? "_blank" : undefined}
                 rel={link.external ? "noopener noreferrer" : undefined}
-                className="text-sm font-medium text-[#9CA3AF] hover:text-white transition-colors relative group"
+                className="text-sm font-medium text-white hover:text-white transition-colors relative group"
               >
                 {link.name}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#A78BFA] transition-all duration-300 group-hover:w-full opacity-0 group-hover:opacity-100" />
