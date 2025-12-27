@@ -284,7 +284,7 @@ export default function Hero() {
       
       {/* BACKGROUND LAYER 1: Noise & Darkness */}
       <div className="absolute inset-0 z-[1] pointer-events-none">
-        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-black/40" />
         <div 
            className="absolute inset-0 opacity-[0.02] mix-blend-overlay"
            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} 
@@ -343,7 +343,7 @@ export default function Hero() {
 
           <motion.p 
             variants={wordVariants}
-            className="max-w-xl mx-auto text-lg md:text-xl text-[#9CA3AF] leading-relaxed font-light"
+            className="max-w-xl mx-auto text-lg md:text-xl text-white/80 leading-relaxed font-light"
           >
             The all-in-one command center for crypto. 
             Real-time insights, automated risk analysis, and effortless portfolio tracking.
