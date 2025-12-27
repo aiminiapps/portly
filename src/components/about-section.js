@@ -529,7 +529,7 @@ export default function AboutSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight leading-[1.1]"
+            className="text-4xl md:text-6xl fontmain font-bold text-white mb-6 tracking-tight leading-[1.1]"
           >
             Intelligence Meets <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#A78BFA] via-[#8B5CF6] to-[#7C3AED]">

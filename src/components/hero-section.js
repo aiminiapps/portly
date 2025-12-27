@@ -327,7 +327,7 @@ export default function Hero() {
           className="mb-8"
         >
           <div className="overflow-hidden mb-2">
-            <motion.h1 className="max-w-4xl text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-[1.05]">
+            <motion.h1 className="max-w-4xl fontmain text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-[1.05]">
               {/* Split words for individual animation */}
               <motion.span variants={wordVariants} className="inline-block mr-4">Master</motion.span>
               <motion.span variants={wordVariants} className="inline-block mr-4">Your</motion.span>
