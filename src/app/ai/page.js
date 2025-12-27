@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import useSWR from 'swr';
 import { 
   FiPieChart, FiBarChart2, FiShield, FiActivity, 
-  FiZap, FiCpu, FiLogOut, FiMenu, FiX, FiCheckSquare, 
-  FiCommand, FiChevronRight, FiGlobe, FiLayers
+  FiLogOut, FiMenu, FiX, FiCheckSquare, 
+  FiChevronRight, FiGlobe, FiLayers
 } from 'react-icons/fi';
 import { 
   connectWallet, disconnectWallet, watchAccount, getBalance, getAccounts 
