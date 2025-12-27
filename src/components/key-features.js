@@ -92,7 +92,7 @@ export default function LuxuryFeatureSlider() {
              whileInView={{ opacity: 1, y: 0 }}
              viewport={{ once: true }}
              transition={{ delay: 0.1 }}
-             className="text-3xl md:text-5xl sm:text-left text-center lg:text-6xl font-bold text-white tracking-tight"
+             className="text-3xl fontmain md:text-5xl sm:text-left text-center lg:text-6xl font-bold text-white tracking-tight"
            >
              Precision in <span className="text-[#8B5CF6]">Every Pixel</span>
            </motion.h2>
@@ -165,7 +165,7 @@ export default function LuxuryFeatureSlider() {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl md:text-5xl font-bold text-white/90 sm:mb-6 mb-3.5 leading-[1.1]">
+                <h3 className="text-xl fontmain md:text-4xl font-bold text-white/90 sm:mb-6 mb-3.5 leading-[1.1]">
                    {activeFeature.title}
                 </h3>
 

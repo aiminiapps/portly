@@ -227,7 +227,7 @@ useEffect(() => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="text-4xl md:text-6xl font-bold tracking-tight text-white mb-6"
+              className="text-4xl fontmain md:text-6xl font-bold tracking-tight text-white mb-6"
             >
              Smarter Tracking, <br className="hidden md:block" />
               <span className="text-[#8B5CF6]">
