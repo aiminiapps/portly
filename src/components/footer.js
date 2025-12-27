@@ -1,6 +1,6 @@
 'use client'
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { FaXTwitter } from "react-icons/fa6";
 import { LiaTelegramPlane } from "react-icons/lia";
 import { SiBnbchain } from "react-icons/si";

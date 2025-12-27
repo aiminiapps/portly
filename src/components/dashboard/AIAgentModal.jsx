@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiSend, FiZap, FiActivity, FiArrowUpRight, FiLayers } from 'react-icons/fi';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
