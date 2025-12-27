@@ -182,7 +182,7 @@ export default function PortfolioOverview({ data, walletBalance }) {
         
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-end gap-8">
           {/* Value Display */}
-          <div className="space-y-4 flex-1">
+          <div className="space-y-4 flex-1 w-full">
             <div className="flex items-center gap-2">
                <div className="p-1.5 rounded-lg bg-white/5 border border-white/5 text-[#8B5CF6]">
                  <FiLayers />
