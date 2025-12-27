@@ -484,7 +484,7 @@ const BentoCard = ({ children, className = "", title, subtitle, icon: Icon, dela
                     <div className="w-10 h-10 rounded-lg bg-[#27272A] border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:bg-[#8B5CF6]/20 group-hover:border-[#8B5CF6]/50 transition-all duration-300">
                         <Icon size={22} className="text-[#A78BFA] group-hover:text-white" />
                     </div>
-                    <h3 className="text-xl font-semibold text-white tracking-tight group-hover:text-[#A78BFA] transition-colors">{title}</h3>
+                    <h3 className="text-xl fontmain font-semibold text-white tracking-tight group-hover:text-[#A78BFA] transition-colors">{title}</h3>
                 </div>
 
                 {/* Subtitle */}
