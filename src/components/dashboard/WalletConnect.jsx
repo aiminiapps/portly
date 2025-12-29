@@ -36,7 +36,7 @@ export default function WalletConnect({ onConnect, isConnecting }) {
 
             {/* Typography */}
             <h1 className="text-3xl font-medium text-white mb-3 tracking-tight">
-              PORTLY<span className="text-white/40">.AI</span>
+              PORTLY
             </h1>
             <p className="text-white/40 text-sm leading-relaxed max-w-[260px] mb-10">
               Your intelligent portfolio manager. Multi-chain analysis powered by Alchemy & Moralis.
