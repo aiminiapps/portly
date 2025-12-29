@@ -218,7 +218,7 @@ const RewardCard = () => {
                    <BsLightningChargeFill className="text-[#F59E0B] text-lg drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
                 </div>
                 
-                <h4 className="text-white font-bold text-lg mb-0.5">500 PTLY</h4>
+                <h4 className="text-white font-bold text-lg mb-0.5">500 POTL</h4>
                 <p className="text-[10px] text-[#9CA3AF] mb-3">Reward Airdropped</p>
                 
                 <div className="flex items-center backdrop-blur-2xl gap-2 px-2 py-1 bg-[#F59E0B]/20 rounded border border-[#F59E0B]/30">
@@ -334,7 +334,7 @@ export default function HowItWorksSection() {
     },
     {
        title: "Instant Rewards",
-       description: "Complete simple social tasks in the Rewards tab. Once verified, $PTLY tokens are airdropped to your connected wallet within 0.9 seconds faster than a block confirmation.",
+       description: "Complete simple social tasks in the Rewards tab. Once verified, $POTL tokens are airdropped to your connected wallet within 0.9 seconds faster than a block confirmation.",
        CardComponent: RewardCard,
        icon: BsStars,
        align: "right"
