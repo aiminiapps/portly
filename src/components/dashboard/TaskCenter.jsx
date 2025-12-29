@@ -481,7 +481,7 @@ export default function TaskCenter() {
             address: TOKEN_CONTRACT,
             symbol: 'POTL',
             decimals: 18,
-            image: 'https://label-x.vercel.app/agent/agentlogo.png' // Update with real Portly logo
+            image: 'https://www.portly.world/agent.png' 
           }
         }
       });
