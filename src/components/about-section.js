@@ -308,7 +308,7 @@ const SpinningToken = () => {
                             anchorY="middle"
                             fontWeight="bold"
                         >
-                            $PTLY
+                            $POTL
                             <meshStandardMaterial color="#FFFBEB" emissive="#F59E0B" emissiveIntensity={0.5} />
                         </Text>
                         
@@ -330,7 +330,7 @@ const SpinningToken = () => {
                             anchorY="middle"
                             fontWeight="bold"
                         >
-                            $PTLY
+                            $POTL
                             <meshStandardMaterial color="#FFFBEB" emissive="#F59E0B" emissiveIntensity={0.5} />
                         </Text>
                     </group>
@@ -644,14 +644,14 @@ export default function AboutSection() {
           <BentoCard 
             className="md:col-span-1 min-h-[300px]"
             title="P2E Rewards"
-            subtitle="Complete missions to earn $PTLY tokens."
+            subtitle="Complete missions to earn $POTL tokens."
             icon={PiTrophy}
             delay={0.4}
             overlayContent={
                 <div className="absolute top-4 left-4">
                      <div className="bg-[#F59E0B]/10 border border-[#F59E0B]/20 px-3 py-1 rounded-full flex items-center gap-1.5">
                         <PiTrophy className="text-[#F59E0B] w-3 h-3" />
-                        <span className="text-[10px] font-bold text-[#F59E0B]">+500 PTLY</span>
+                        <span className="text-[10px] font-bold text-[#F59E0B]">+500 POTL</span>
                      </div>
                 </div>
             }
