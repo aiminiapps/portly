@@ -101,7 +101,7 @@ const useWallet = () => {
         window.location.href = `https://metamask.app.link/dapp/${window.location.host}`;
         return;
       }
-      alert('🔥 Please install MetaMask extension to start earning PTLY tokens!');
+      alert('🔥 Please install MetaMask extension to start earning POTL tokens!');
       return;
     }
 
@@ -412,7 +412,7 @@ export default function TaskCenter() {
   // Complete Task Handler (Logic Unchanged)
   const completeTask = useCallback(async (taskId) => {
     if (!wallet.isConnected) {
-      setNotification({ type: 'error', message: 'Connect wallet to start earning PTLY!' });
+      setNotification({ type: 'error', message: 'Connect wallet to start earning POTL!' });
       setTimeout(() => setNotification(null), 3000);
       return;
     }
@@ -457,7 +457,7 @@ export default function TaskCenter() {
           }
         });
 
-        setNotification({ type: 'success', message: `🎉 +${task.reward} PTLY earned!`, txHash: data.txHash });
+        setNotification({ type: 'success', message: `🎉 +${task.reward} POTL earned!`, txHash: data.txHash });
         setTimeout(() => setNotification(null), 5000);
       } else {
         throw new Error(data.error || 'Transaction failed');
@@ -479,13 +479,13 @@ export default function TaskCenter() {
           type: 'ERC20',
           options: {
             address: TOKEN_CONTRACT,
-            symbol: 'PTLY',
+            symbol: 'POTL',
             decimals: 18,
             image: 'https://label-x.vercel.app/agent/agentlogo.png' // Update with real Portly logo
           }
         }
       });
-      setNotification({ type: 'success', message: '🎉 PTLY added to MetaMask!' });
+      setNotification({ type: 'success', message: '🎉 POTL added to MetaMask!' });
     } catch (error) {
       console.error(error);
     }
@@ -547,7 +547,7 @@ export default function TaskCenter() {
               <div className="absolute inset-0 bg-[#8B5CF6]/5 animate-pulse"></div>
               <FiCpu className="w-12 h-12 text-[#8B5CF6] mx-auto mb-4 animate-spin" />
               <h3 className="text-xl font-bold text-white mb-2">Claiming Bonus...</h3>
-              <p className="text-white/40 text-sm">Transferring 10 PTLY to your wallet.</p>
+              <p className="text-white/40 text-sm">Transferring 10 POTL to your wallet.</p>
             </div>
           </motion.div>
         )}
@@ -558,7 +558,7 @@ export default function TaskCenter() {
                 <FaGift className="w-8 h-8 text-emerald-400" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Welcome to Portly!</h3>
-              <p className="text-emerald-400 font-medium mb-4">+10 PTLY Received</p>
+              <p className="text-emerald-400 font-medium mb-4">+10 POTL Received</p>
               <button onClick={() => window.location.reload()} className="w-full py-3 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-bold transition-all">Start Earning</button>
             </div>
           </motion.div>
@@ -576,7 +576,7 @@ export default function TaskCenter() {
               </span>
               Task Center
             </h1>
-            <p className="text-white/40 max-w-md">Complete missions to earn PTLY tokens and unlock premium AI features.</p>
+            <p className="text-white/40 max-w-md">Complete missions to earn POTL tokens and unlock premium AI features.</p>
           </div>
           
           {!wallet.isConnected ? (
@@ -614,7 +614,7 @@ export default function TaskCenter() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Tasks Done', val: `${stats.completed}/${stats.total}`, icon: FaCheckCircle, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-            { label: 'PTLY Earned', val: stats.earned, icon: FaCoins, color: 'text-[#8B5CF6]', bg: 'bg-[#8B5CF6]/10' },
+            { label: 'POTL Earned', val: stats.earned, icon: FaCoins, color: 'text-[#8B5CF6]', bg: 'bg-[#8B5CF6]/10' },
             { label: 'Completion', val: `${Math.round(stats.progress)}%`, icon: FaChartLine, color: 'text-blue-400', bg: 'bg-blue-500/10' },
             { label: 'Streak', val: `${getStorage()?.stats?.currentStreak || 0} Days`, icon: FaFire, color: 'text-orange-400', bg: 'bg-orange-500/10' },
           ].map((s, i) => (
@@ -664,7 +664,7 @@ export default function TaskCenter() {
 
                       <div className="text-right">
                          <p className="text-lg font-bold text-[#8B5CF6]">+{task.reward}</p>
-                         <p className="text-[10px] text-white/20 mb-3">PTLY</p>
+                         <p className="text-[10px] text-white/20 mb-3">POTL</p>
                          
                          {isCompleted ? (
                             <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold bg-emerald-500/10 px-3 py-1.5 rounded-lg">
@@ -697,7 +697,7 @@ export default function TaskCenter() {
                  <FaWallet size={24} />
               </div>
               <div>
-                 <h3 className="font-bold text-white">Add PTLY to Wallet</h3>
+                 <h3 className="font-bold text-white">Add POTL to Wallet</h3>
                  <p className="text-xs text-white/40">View your earned tokens in MetaMask</p>
                  <div className="flex items-center gap-2 mt-2">
                     <code className="px-2 py-1 rounded bg-black/30 border border-white/5 text-[10px] text-white/30 font-mono">
