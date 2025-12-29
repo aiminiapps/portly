@@ -243,7 +243,7 @@ useEffect(() => {
               transition={{ delay: 0.2 }}
               className="max-w-2xl text-sm sm:text-lg text-balance text-[#9CA3AF] mb-10 leading-relaxed"
             >
-            Visualize your entire portfolio in one place and earn PTLY tokens just for completing missions. No complex setup just connect and grow.
+            Visualize your entire portfolio in one place and earn POTL tokens just for completing missions. No complex setup just connect and grow.
             </motion.p>
 
             {/* CTA Buttons */}
