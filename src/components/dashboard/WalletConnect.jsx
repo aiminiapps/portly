@@ -46,34 +46,38 @@ export default function WalletConnect({ onConnect, isConnecting }) {
             <div className="mb-4">
               <Image src='/logo.png' alt='logo' width={170} height={50}/>
             </div>
-            <p className="text-white/40 text-sm leading-relaxed max-w-[260px] mb-10">
+            <p className="text-white/40 text-sm leading-relaxed mb-6">
               Your intelligent portfolio manager. Multi-chain analysis powered by Alchemy & Moralis.
             </p>
 
-            {/* Primary Action */}
             <motion.button
-              onClick={onConnect}
-              disabled={isConnecting}
-              whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.1)' }}
-              whileTap={{ scale: 0.98 }}
-              className="group w-full relative overflow-hidden rounded-xl bg-white text-black font-medium py-4 px-6 flex items-center justify-center gap-3 transition-colors"
-            >
-              {isConnecting ? (
-                <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                  <span className="text-sm">
-                    {lastSession ? 'Resuming Session...' : 'Authenticating...'}
-                  </span>
-                </div>
-              ) : (
-                <>
-                  <span className="text-sm">
-                    {lastSession ? 'Resume Dashboard' : 'Connect Wallet'}
-                  </span>
-                  <FiArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </>
-              )}
-            </motion.button>
+                onClick={onConnect}
+                disabled={isConnecting}
+                whileHover={{ scale: 1.02, translateY: -1 }}
+                whileTap={{ scale: 0.98, translateY: 1 }}
+                className="relative group w-full px-8 py-4 cursor-pointer rounded-2xl font-semibold text-lg flex items-center justify-center gap-3 overflow-hidden transition-all duration-300 isolate text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-[#8B5CF6] to-[#6D28D9] z-[-1]" />
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/40" />
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-black/30" />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-transparent via-white/20 to-transparent transition-opacity duration-500 transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%]" />
+
+                {isConnecting ? (
+                  <div className="flex items-center gap-3 cursor-progress">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>
+                      {lastSession ? 'Resuming Session...' : 'Authenticating...'}
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    <span>
+                      {lastSession ? 'Resume Dashboard' : 'Connect Wallet'}
+                    </span>
+                    <FiArrowRight className="w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </motion.button>
 
             {/* Resume Session Indicator */}
             {lastSession && !isConnecting && (
@@ -89,7 +93,7 @@ export default function WalletConnect({ onConnect, isConnecting }) {
           </div>
 
           {/* Footer / Chains */}
-          <div className="mt-12 pt-8 border-t border-white/5 grid grid-cols-3 gap-4">
+          <div className="mt-8 pt-8 border-t border-white/5 grid grid-cols-3 gap-4">
             {[
               { label: 'Ethereum', icon: SiEthereum },
               { label: 'Polygon', icon: SiPolygon },
