@@ -10,6 +10,7 @@ import {
 import { RiTelegram2Line, RiTwitterXFill } from "react-icons/ri";
 import { BiCoin} from 'react-icons/bi';
 import { FiCpu, FiLayers } from 'react-icons/fi';
+import Image from 'next/image';
 
 // Storage Configuration
 const STORAGE_KEY = 'portly-task-center';
@@ -533,7 +534,8 @@ export default function TaskCenter() {
   if (!wallet.isInitialized) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <FiCpu className="w-12 h-12 text-[#8B5CF6] animate-spin mb-4" />
+        {/* <FiCpu className="w-12 h-12 text-[#8B5CF6] animate-spin mb-4" /> */}
+        <Image src='/agent.png' alt='agent logo' width={60} height={60} className='animate-pulse mb-6'/>
         <p className="text-white/60 text-sm">Initializing Neural Link...</p>
       </div>
     );
