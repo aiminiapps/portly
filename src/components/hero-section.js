@@ -9,18 +9,12 @@ import {
   RiBook3Line, 
   RiMenu3Line, 
   RiCloseLine, 
-  RiShieldCheckLine, 
-  RiPieChart2Line, 
-  RiArrowRightUpLine,
-  RiArrowRightLine,
-  RiPulseLine,
-  RiGlobalLine
+  RiArrowRightLine
 } from "react-icons/ri";
 import Image from "next/image";
 import Link from "next/link";
 
 // --- OPTIMIZATION: Better Loading Placeholder ---
-// This CSS placeholder mimics the 3D pillar so the user sees content INSTANTLY
 const LightPillarPlaceholder = () => (
   <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
      {/* Static CSS imitation of the pillar */}
