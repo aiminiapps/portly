@@ -76,7 +76,7 @@ const Navbar = () => {
     { name: "Home", href: "/", external: false },
     { name: "Agent", href: "/ai", external: false },
     { name: "Tasks", href: "/ai#tasks", external: false },
-    { name: "Bscscan", href: "https://bscscan.com", external: true },
+    { name: "Bscscan", href: "https://bscscan.com/token/0x46E4B28A20400004B0F589e997ca9c6Fe40c7449", external: true },
   ];
 
   return (
