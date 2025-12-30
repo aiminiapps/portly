@@ -170,10 +170,11 @@ const Navbar = () => {
   );
 };
 
-const LuxuryButton = ({ text, icon: Icon, primary = false, href = "#" }) => {
+const LuxuryButton = ({ text, icon: Icon, target, primary = false, href = "#" }) => {
   return (
     <motion.a
       href={href}
+      target={target}
       whileHover={{ scale: 1.02, translateY: -2 }}
       whileTap={{ scale: 0.98, translateY: 1 }}
       className={`relative group px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-3 overflow-hidden transition-all duration-300 isolate
@@ -278,7 +279,7 @@ export default function Hero() {
           className="flex flex-col sm:flex-row items-center gap-5"
         >
           <LuxuryButton text="Launch App" icon={RiRocket2Line} primary={true} href="/ai" />
-          <LuxuryButton text="Documentation" icon={RiBook3Line} />
+          <LuxuryButton text="Documentation" icon={RiBook3Line} href="https://portly-ai.gitbook.io/portly.ai-docs/" target="blank" />
         </motion.div>
 
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#0A0A0B] to-transparent pointer-events-none" />
