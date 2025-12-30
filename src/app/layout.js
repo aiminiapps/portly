@@ -9,10 +9,10 @@ export const metadata = {
     default: "Portly - Intelligent Crypto Portfolio & Wealth AI",
     template: "%s | Portly"
   },
-  description: "Transform blockchain data into wealth intelligence. Connect your wallet to visualize assets across chains, get instant AI risk analysis, and earn PTLY tokens by completing missions.",
+  description: "Transform blockchain data into wealth intelligence. Connect your wallet to visualize assets across chains, get instant AI risk analysis, and earn POTL tokens by completing missions.",
   keywords: [
     "Portly",
-    "PTLY token",
+    "POTL token",
     "crypto portfolio tracker",
     "AI wealth manager",
     "DeFi analytics",
@@ -58,7 +58,7 @@ export const metadata = {
     site: "@Portly_Official",
     creator: "@Portly_Official",
     title: "Portly - Master Your Crypto Universe",
-    description: "Real-time tracking, predictive analytics, and smart alnpm install @next/third-parties@latest next@latesterts for your DeFi assets. Earn PTLY while you manage wealth.",
+    description: "Real-time tracking, predictive analytics, and smart alnpm install @next/third-parties@latest next@latesterts for your DeFi assets. Earn POTL while you manage wealth.",
     images: ["/og-portly.png"]
   },
 
@@ -118,7 +118,7 @@ export default function RootLayout({ children }) {
               "@type": "SoftwareApplication",
               "name": "Portly",
               "url": "https://www.portly.world",
-              "description": "AI-powered crypto portfolio management platform. Track assets, analyze risk, and earn PTLY tokens.",
+              "description": "AI-powered crypto portfolio management platform. Track assets, analyze risk, and earn POTL tokens.",
               "applicationCategory": "FinanceApplication",
               "operatingSystem": "Web, iOS, Android",
               "offers": {
