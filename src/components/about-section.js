@@ -669,6 +669,7 @@ export default function AboutSection() {
         </div>
 
         {/* Footer CTA */}
+        <a href="https://portly-ai.gitbook.io/portly.ai-docs/" target="_blank">
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -681,7 +682,7 @@ export default function AboutSection() {
               <div className="absolute inset-0 bg-gradient-to-r from-[#8B5CF6]/20 via-[#7C3AED]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
            </button>
         </motion.div>
-
+        </a>
       </div>
     </section>
   );
