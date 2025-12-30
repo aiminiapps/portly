@@ -31,7 +31,7 @@ class MetaMaskManager {
       // Initialize MetaMask SDK for mobile and non-injected scenarios
       this.sdk = new MetaMaskSDK({
         dappMetadata: {
-          name: 'PORTLY.AI',
+          name: 'PORTLY',
           url: window.location.origin,
         },
         preferDesktop: true,

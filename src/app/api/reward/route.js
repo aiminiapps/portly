@@ -230,7 +230,7 @@ export async function POST(request) {
       blockNumber: parseInt(receipt.blockNumber, 16),
       gasUsed: parseInt(receipt.gasUsed, 16),
       amount: reward,
-      symbol: 'LBLX',
+      symbol: 'POTLP',
       recipient: address,
       sender: adminWallet.address,
       processingTime,
