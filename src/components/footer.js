@@ -62,7 +62,7 @@ const Footer = () => {
               <div className="flex items-center gap-3">
                 <SocialLink href="https://twitter.com" icon={FaXTwitter} label="X" />
                 <SocialLink href="https://telegram.org" icon={LiaTelegramPlane} label="Telegram" />
-                <SocialLink href="https://bscscan.com" icon={SiBnbchain} label="Scan" />
+                <SocialLink href="https://bscscan.com/token/0x46E4B28A20400004B0F589e997ca9c6Fe40c7449" icon={SiBnbchain} label="Scan" />
               </div>
             </div>
 
