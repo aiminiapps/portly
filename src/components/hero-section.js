@@ -170,44 +170,6 @@ const Navbar = () => {
   );
 };
 
-
-const AssetWidget = ({ delay }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 50, filter: "blur(10px)" }}
-      animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-      transition={{ duration: 1.2, delay, ease: "easeOut" }}
-      className="absolute right-[5%] lg:right-[8%] bottom-[20%] hidden xl:flex flex-col w-72 p-5 rounded-2xl
-                 bg-[#121214]/70 backdrop-blur-xl border border-white/5 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.8)]
-                 z-10 group hover:-translate-y-2 transition-transform duration-500 ease-out"
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-[#1E1E24] text-[#F59E0B] shadow-inner"><RiPieChart2Line className="w-4 h-4" /></div>
-          <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">Portfolio</span>
-        </div>
-        <RiGlobalLine className="text-gray-500 w-4 h-4 opacity-50" />
-      </div>
-
-      <div className="flex items-center gap-4 mb-4">
-        <div className="relative w-14 h-14 rounded-full border-4 border-[#1E1E24] flex items-center justify-center shadow-lg">
-             <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 36 36">
-                <path className="text-[#1E1E24]" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
-                <path className="text-[#8B5CF6]" strokeDasharray="70, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-             </svg>
-             <span className="text-[10px] font-bold text-white">70%</span>
-        </div>
-        <div>
-          <div className="text-xl font-bold text-white tracking-tight">$42,890</div>
-          <div className="flex items-center gap-1 text-[#10B981] text-xs font-medium">
-            <RiArrowRightUpLine className="w-3 h-3" /> +12.5%
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
 const LuxuryButton = ({ text, icon: Icon, primary = false, href = "#" }) => {
   return (
     <motion.a
@@ -273,8 +235,6 @@ export default function Hero() {
         <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#0A0A0B] to-transparent z-10 pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-radial from-transparent via-[#0A0A0B]/30 to-[#0A0A0B] pointer-events-none" />
       </div>
-
-      <AssetWidget delay={1.2} />
 
       {/* FOREGROUND: Hero Content */}
       <div className="relative z-20 flex flex-col items-center justify-center min-h-screen px-4 pt-20 text-center">
