@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 
-// ✅ LBLX Token Transaction API - Updated for LabelX
+// ✅ POTL Token Transaction API - Updated for LabelX
 
 const ADMIN_PRIVATE_KEY = process.env.ADMIN_PRIVATE_KEY;
 const TOKEN_CONTRACT_ADDRESS = process.env.TOKEN_CONTRACT_ADDRESS;
 const BSC_RPC_URL = 'https://bsc-dataseed1.binance.org';
 
-console.log('🔧 LBLX Transaction API Configuration:');
+console.log('🔧 POTL Transaction API Configuration:');
 console.log('- Admin Key:', ADMIN_PRIVATE_KEY ? '✅ Present' : '❌ Missing');
 console.log('- Token Address:', TOKEN_CONTRACT_ADDRESS ? '✅ Present' : '❌ Missing');
 
@@ -53,7 +53,7 @@ function createTransferData(recipientAddress, tokenAmountWei) {
 
 export async function POST(request) {
   const startTime = Date.now();
-  console.log('\n🎯 LBLX Transaction API called at:', new Date().toISOString());
+  console.log('\n🎯 POTL Transaction API called at:', new Date().toISOString());
 
   try {
     // Environment validation
@@ -69,7 +69,7 @@ export async function POST(request) {
 
     console.log('📦 Processing:', isWelcomeBonus ? 'Welcome Bonus' : `Task ${taskId}`);
     console.log('👤 To User:', address);
-    console.log('💰 Amount:', reward, 'LBLX');
+    console.log('💰 Amount:', reward, 'POTL');
 
     // Load ethers v6
     const ethers = await import('ethers');
@@ -219,8 +219,8 @@ export async function POST(request) {
 
     const processingTime = Date.now() - startTime;
 
-    console.log('🎉 LBLX TRANSACTION SUCCESSFUL!');
-    console.log('✅ Sent', reward, 'LBLX from', adminWallet.address, 'to', address);
+    console.log('🎉 POTL TRANSACTION SUCCESSFUL!');
+    console.log('✅ Sent', reward, 'POTL from', adminWallet.address, 'to', address);
     console.log('✅ TX Hash:', txHash);
     console.log('⏱️ Processing time:', processingTime, 'ms');
 
@@ -261,7 +261,7 @@ export async function GET() {
       blockNumber: parseInt(blockNumber, 16),
       adminWallet: adminWallet.address,
       tokenContract: TOKEN_CONTRACT_ADDRESS,
-      tokenSymbol: 'LBLX',
+      tokenSymbol: 'POTL',
       network: 'Binance Smart Chain',
       chainId: 56,
       rpcUrl: BSC_RPC_URL,
