@@ -460,7 +460,7 @@ export default function TaskCenter() {
     try {
       const nonce = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const expiry = Math.floor(Date.now() / 1000) + 3600;
-      const message = `Complete task: ${taskId}\nAddress: ${wallet.address}\nReward: ${task.reward} LBLX\nNonce: ${nonce}\nExpiry: ${expiry}`;
+      const message = `Complete task: ${taskId}\nAddress: ${wallet.address}\nReward: ${task.reward} POTL\nNonce: ${nonce}\nExpiry: ${expiry}`;
 
       const signature = await wallet.signer.signMessage(message);
 
