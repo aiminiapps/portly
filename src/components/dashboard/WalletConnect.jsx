@@ -1,17 +1,30 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { FiArrowRight, FiCommand, FiShield, FiZap } from 'react-icons/fi';
 import { SiEthereum, SiBinance, SiPolygon } from 'react-icons/si';
 
 export default function WalletConnect({ onConnect, isConnecting }) {
   const [lastSession, setLastSession] = useState(null);
+  const [hasAutoTriggered, setHasAutoTriggered] = useState(false);
 
   useEffect(() => {
+    // Check local storage for previous connection
     const saved = localStorage.getItem('portly_wallet_address');
-    if (saved) setLastSession(saved);
-  }, []);
+    if (saved) {
+      setLastSession(saved);
+      // Auto-connect logic: If we have a saved session and haven't tried yet
+      if (!hasAutoTriggered && !isConnecting) {
+        setHasAutoTriggered(true);
+        // Slight delay to ensure hydration/render is stable before triggering
+        setTimeout(() => {
+          onConnect();
+        }, 500);
+      }
+    }
+  }, [onConnect, isConnecting, hasAutoTriggered]);
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -30,14 +43,9 @@ export default function WalletConnect({ onConnect, isConnecting }) {
           <div className="relative z-10 flex flex-col items-center text-center">
             
             {/* Logo Mark */}
-            <div className="mb-8 p-4 rounded-2xl bg-white/5 border border-white/5">
-              <FiCommand className="w-8 h-8 text-white" />
+            <div className="mb-4">
+              <Image src='/logo.png' alt='logo' width={170} height={50}/>
             </div>
-
-            {/* Typography */}
-            <h1 className="text-3xl font-medium text-white mb-3 tracking-tight">
-              PORTLY
-            </h1>
             <p className="text-white/40 text-sm leading-relaxed max-w-[260px] mb-10">
               Your intelligent portfolio manager. Multi-chain analysis powered by Alchemy & Moralis.
             </p>
@@ -53,7 +61,9 @@ export default function WalletConnect({ onConnect, isConnecting }) {
               {isConnecting ? (
                 <div className="flex items-center gap-3">
                   <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                  <span className="text-sm">Authenticating...</span>
+                  <span className="text-sm">
+                    {lastSession ? 'Resuming Session...' : 'Authenticating...'}
+                  </span>
                 </div>
               ) : (
                 <>
