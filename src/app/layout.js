@@ -23,21 +23,21 @@ export const metadata = {
     "Binance Smart Chain",
     "automated insights"
   ],
-  authors: [{ name: "Portly Team", url: "https://portly.xyz" }],
+  authors: [{ name: "Portly Team", url: "https://www.portly.world" }],
   creator: "Portly",
   publisher: "Portly",
   
   // Canonical URL
-  metadataBase: new URL("https://portly.xyz"),
+  metadataBase: new URL("https://www.portly.world"),
   alternates: {
-    canonical: "https://portly.xyz"
+    canonical: "https://www.portly.world"
   },
 
   // Open Graph (Facebook, LinkedIn, WhatsApp)
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://portly.xyz",
+    url: "https://www.portly.world",
     siteName: "Portly",
     title: "Portly - Wealth Intelligence Reimagined",
     description: "Stop guessing. Start knowing. Track assets, analyze risk, and optimize your crypto portfolio with institutional-grade AI.",
@@ -117,7 +117,7 @@ export default function RootLayout({ children }) {
               "@context": "https://schema.org",
               "@type": "SoftwareApplication",
               "name": "Portly",
-              "url": "https://portly.xyz",
+              "url": "https://www.portly.world",
               "description": "AI-powered crypto portfolio management platform. Track assets, analyze risk, and earn PTLY tokens.",
               "applicationCategory": "FinanceApplication",
               "operatingSystem": "Web, iOS, Android",
@@ -131,7 +131,7 @@ export default function RootLayout({ children }) {
                 "name": "Portly",
                 "logo": {
                   "@type": "ImageObject",
-                  "url": "https://portly.xyz/logo.png"
+                  "url": "https://www.portly.world/logo.png"
                 },
                 "sameAs": [
                   "https://x.com/Portly_Official"
@@ -139,7 +139,7 @@ export default function RootLayout({ children }) {
               },
               "potentialAction": {
                 "@type": "SearchAction",
-                "target": "https://portly.xyz/?q={search_term_string}",
+                "target": "https://www.portly.world/?q={search_term_string}",
                 "query-input": "required name=search_term_string"
               }
             })
