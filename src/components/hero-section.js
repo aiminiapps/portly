@@ -170,45 +170,6 @@ const Navbar = () => {
   );
 };
 
-const ScannerWidget = ({ delay }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -50, filter: "blur(10px)" }}
-      animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-      transition={{ duration: 1.2, delay, ease: "easeOut" }}
-      className="absolute left-[5%] lg:left-[8%] top-[30%] hidden xl:flex flex-col w-64 p-5 rounded-2xl
-                 bg-[#121214]/70 backdrop-blur-xl border border-white/5 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.8)]
-                 z-10 group hover:border-[#8B5CF6]/40 transition-all duration-300"
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-[#1E1E24] text-[#A78BFA] shadow-inner"><RiShieldCheckLine className="w-4 h-4" /></div>
-          <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">AI Audit</span>
-        </div>
-        <div className="flex gap-1 items-center bg-[#10B981]/10 px-2 py-0.5 rounded-full border border-[#10B981]/20">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-          <span className="text-[10px] text-[#10B981] font-mono font-bold">LIVE</span>
-        </div>
-      </div>
-      <div className="relative h-20 bg-[#0A0A0B]/80 rounded-lg border border-white/5 overflow-hidden mb-3 shadow-inner">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#8B5CF6] to-transparent opacity-70 animate-[scan_2s_ease-in-out_infinite] shadow-[0_0_10px_#8B5CF6]" />
-        <div className="p-3 grid grid-cols-2 gap-2 opacity-50">
-           <div className="h-1.5 bg-white/10 rounded-full w-full mb-1" />
-           <div className="h-1.5 bg-white/5 rounded-full w-2/3" />
-           <div className="h-1.5 bg-white/5 rounded-full w-1/2" />
-           <div className="h-1.5 bg-white/10 rounded-full w-full" />
-        </div>
-      </div>
-      <div className="flex justify-between items-end">
-        <div>
-          <div className="text-[10px] text-gray-500 mb-1 font-medium">Safety Score</div>
-          <div className="text-xl font-bold text-white tracking-tight">9.8<span className="text-sm text-gray-500 font-normal">/10</span></div>
-        </div>
-        <RiPulseLine className="text-[#10B981] w-5 h-5 opacity-80" />
-      </div>
-    </motion.div>
-  );
-};
 
 const AssetWidget = ({ delay }) => {
   return (
@@ -313,7 +274,6 @@ export default function Hero() {
         <div className="absolute inset-0 bg-gradient-radial from-transparent via-[#0A0A0B]/30 to-[#0A0A0B] pointer-events-none" />
       </div>
 
-      <ScannerWidget delay={1.0} />
       <AssetWidget delay={1.2} />
 
       {/* FOREGROUND: Hero Content */}
