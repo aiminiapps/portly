@@ -285,38 +285,71 @@ const useWallet = () => {
   }, []);
 
   // Auto-reconnect
-  useEffect(() => {
-    let isMounted = true;
-    const reconnect = async () => {
-      try {
-        const saved = getStorage();
-        if (saved?.wallet?.isConnected && saved.wallet.address && window.ethereum) {
-          const isRecent = saved.wallet.lastConnected && 
-            (Date.now() - saved.wallet.lastConnected) < 24 * 60 * 60 * 1000;
+// ✅ CORRECTED AUTO-RECONNECT LOGIC
+useEffect(() => {
+  let isMounted = true;
 
-          if (isRecent) {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts.length > 0 && accounts[0].toLowerCase() === saved.wallet.address.toLowerCase()) {
-              if (isMounted) {
-                setWallet(prev => ({
-                  ...prev,
-                  address: accounts[0],
-                  isConnected: true,
-                  isInitialized: true
-                }));
-              }
-              return;
+  const reconnect = async () => {
+    try {
+      const saved = getStorage();
+      
+      // Check if we have a saved connection and Ethereum is available
+      if (saved?.wallet?.isConnected && saved.wallet.address && window.ethereum) {
+        
+        // Check if the login is recent (e.g., within 24 hours)
+        const isRecent = saved.wallet.lastConnected && 
+          (Date.now() - saved.wallet.lastConnected) < 24 * 60 * 60 * 1000;
+
+        if (isRecent) {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          
+          if (accounts.length > 0 && accounts[0].toLowerCase() === saved.wallet.address.toLowerCase()) {
+            
+            // 🔧 CRITICAL FIX: Re-initialize Provider & Signer here
+            const ethersModule = await import('ethers');
+            const ethers = ethersModule.default || ethersModule;
+            
+            // Re-create provider and signer
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            
+            // Fetch fresh balance
+            let balance = '0';
+            try {
+              const rawBalance = await provider.getBalance(accounts[0]);
+              balance = ethers.formatEther(rawBalance);
+            } catch (err) {
+              console.warn('Balance fetch failed:', err);
             }
+
+            if (isMounted) {
+              setWallet(prev => ({
+                ...prev,
+                address: accounts[0],
+                provider, // ✅ Restore Provider
+                signer,   // ✅ Restore Signer (Fixes the crash)
+                isConnected: true,
+                balance,
+                isInitialized: true
+              }));
+            }
+            return;
           }
         }
-        if (isMounted) setWallet(prev => ({ ...prev, isInitialized: true }));
-      } catch (error) {
-        if (isMounted) setWallet(prev => ({ ...prev, isInitialized: true }));
       }
-    };
-    reconnect();
-    return () => { isMounted = false; };
-  }, []);
+      
+      // If not connected or session expired
+      if (isMounted) setWallet(prev => ({ ...prev, isInitialized: true }));
+      
+    } catch (error) {
+      console.error("Auto-connect failed:", error);
+      if (isMounted) setWallet(prev => ({ ...prev, isInitialized: true }));
+    }
+  };
+
+  reconnect();
+  return () => { isMounted = false; };
+}, []);
 
   return { ...wallet, connectWallet, disconnect, welcomeBonusStatus };
 };
